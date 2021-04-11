@@ -1,0 +1,145 @@
+<!-- For so long, I've been searching for a convenient Linux development environment setup for doing my projects on Windows. I have a Ubuntu laptop, which is 6 years old now and long passed its retirement age. Just starting it up will take more than a minute. Not to mention if Ubuntu happens to have a mandatory update, it would freeze completely after startup until the upgrade finishes. -->
+<!-- study-notes -->
+<div id='content-wrapper'>
+    <div id='content'>
+        <h1>Ubuntu on Docker - My New Development Environment</h1>
+        <p id='content-date'>Dec. 19, 2020, 01:56:40</p>
+
+        <p>
+            For so long, I've been searching for a convenient Linux development environment setup for doing my projects on Windows.
+        </p>
+        <p>
+            I have a Ubuntu laptop, which is 6 years old now and long passed its retirement age. Just starting it up will take more than a minute. Not to mention if Ubuntu happens to have a mandatory update, it would freeze completely after startup until the upgrade finishes.
+        </p>
+        <p>
+            On the other hand, I have a very powerful and new Windows desktop that I assembled in early 2019. Honestly I originally set it up as a gaming PC, with a large monitor and a mechanical keyboard. With these peripherals, writing code on it should be as smooth and enjoyable as a I can ever imagine. The only downside is, however, that it's running Windows 10.
+        </p>
+        <p>
+            In the past, I've been using Ubuntu VM in VMWare as my development machine. It quickly became annoying that I had to open up VMWare, wait for Ubuntu to boot up, and wait for upgrade before I could type in anything in the terminal (VMs often have limited RAM allocated). In addition to the long wait time, a full-fledged Ubuntu OS still hog a lot of resources on my desktop.
+        </p>
+        <p>
+            Ubuntu on Docker is a real lifesaver for me under such circumstance.
+        </p>
+
+        <h2>Unconventional Use of Docker</h2>
+        <p>
+            Docker works very well in certain scenarios, namely for on-demand and server-less computing. It fits that niche perfectly by providing lightweight and fully containerized application runtime and applications as a single image that can be deployed anywhere anytime.
+        </p>
+        <p>
+            I'll not go into details of how Docker works. In essence, Docker manages containers that are built from images.
+        </p>
+        <p>
+            Despite similar names, Docker images are different from regular OS images in that they are very light-weight and contain only a stripped collection of files that can just make things work.
+        </p>
+        <p>
+            However, as the title says, using Docker containers as development VMs is unconventional and not what Docker is mainly used for.
+        </p>
+        <p>
+            You may encounter posts or even official documents, like <a href='https://docs.docker.com/engine/examples/running_ssh_service/'>the Docker document</a> and <a href='https://jpetazzo.github.io/2014/06/23/docker-ssh-considered-evil/'>other people's posts</a>, saying that containers are not supposed to be connected to directly.
+        </p>
+        <p>
+            They are totally right, but only if those containers are used in <b>production</b> settings, which is not the case in my scenario.
+        </p>
+        <p>
+            Docker containers are often shipped as packaged products that are not meant to be opened and inspected. They are "black boxes" that serve some functions and are destroyed once they finish. In a sense, they are like disposable chopsticks - cheap to manufacture and transport but one-time use only.
+        </p>
+        <p>
+            In comparison, my Ubuntu Docker container is not meant to be shipped anywhere or serve important functions other than providing me a Linux environment to run my code. Further deviating from the conventional Docker rules, my container is purposely made to persist for a long period of time because I want my code to exist the next time I connect to that container.
+        </p>
+        <p>
+            Using Docker very unconventionally doesn't mean it's dangerous or wrong. Docker is made for serverless computing doesn't mean it can only be used for serverless computing. So, warning heeded and let's set up a container as my new development environment.
+        </p>
+
+        <h2>Docker Engine & Image Setup</h2>
+        <p>
+            First, I need to download "Docker Desktop for Windows" (<a href='https://docs.docker.com/docker-for-windows/install/'>here</a>). Then click install and follow the installation guide. During the process, I need to tick "Enable Hyper-V" and "Install WSL".
+        </p>
+        <p>
+            A <b>Hyper-V(isor)</b> is used to monitor and coordinate different containers on a given host machine. It allocates host machine resources to containers and communicates between host and containers and among containers.<br>
+            <b>WSL</b> is the "Windows SubSystem for Linux", which provides Linux kernel supports on Windows machines.
+        </p>
+        <p>
+            After the installation is done and the machine is restarted, Docker automatically opens up.
+            <div class='img-txt'>
+                <img src='../imgs/Docker-1.png' style='max-width:100%;'>
+            </div>
+        </p>
+        <p>
+            I run <icode>docker images</icode> in the terminal to make sure <icode>docker</icode> command is properly setup. The output shows there aren't any images on the machine yet.
+        </p>
+
+        <p>
+            Now let's pull the most recent Ubuntu image from Dockerhub using <icode>docker pull ubuntu</icode> and check the downloaded image using <icode>docker images</icode>.
+            <div class='img-txt'>
+                <img src='../imgs/Docker-2.png' style='max-width:100%;'>
+            </div>
+        </p>
+        <p>
+            Next, run a Ubuntu container from image(<icode>ubuntu</icode>) with <icode>docker run -it --name ubuntuvm ubuntu</icode>. The name of the container is <icode>ubuntuvm</icode>. I want to interact(<icode>-i</icode>) with the container in the terminal (<icode>-t</icode>) once it's started.
+            <div class='img-txt'>
+                <img src='../imgs/Docker-3.png' style='max-width:100%'>
+            </div>
+        </p>
+        <p>
+            I also check that the container is indeed running a Ubuntu machine with the most recent 20.04.1 version.
+        </p>
+        <p>
+            Next, I need to tag this image and lock it to prevent it from getting overwritten by future releases. The command is <icode>docker tag ubuntu:latest ubuntu:20.04.1</icode>. Effectively a copy of the image is created.
+            <div class='img-txt'>
+                <img src='../imgs/Docker-4.png' style='max-width:100%'>
+            </div>
+        </p>
+
+        <h2>Create Container</h2>
+        <p>
+            Now I want to create a container from the Ubuntu image and be able to connect to it via SSH.
+        </p>
+        <p>
+            First, let's re-run the container and create a user called hackerry. <icode>useradd -r hackerry</icode> creates user hackerry and the home folder. <icode>passwd hackerry</icode> changes login password of user hackerry.
+            <div class='img-txt'>
+                <img src='../imgs/Docker-5.png' style='max-width:100%'>
+            </div>
+        </p>
+        <p>
+            To be able to connect to this container, I need to configure it as an SSH server. Install <icode>openssh-server</icode> packets with <icode>apt install openssh-server</icode>. Then start the service with <icode>/etc/init.d/ssh start</icode> and check the ssh connection.
+            <div class='img-txt'>
+                <img src='../imgs/Docker-6.png' style='max-width:100%'>
+            </div>
+        </p>
+        <p>
+            At this point, a basic Ubuntu VM is properly set up. I want to save the changes I've made to this container as a backup image so that I don't have to go through all those configuration again in the future. I run <icode>docker commit ubuntuvm ubuntuvm</icode> to convert the <icode>ubuntuvm</icode> container I just modified to a image.
+            <div class='img-txt'>
+                <img src='../imgs/Docker-7.png' style='max-width:100%'>
+            </div>
+        </p>
+
+        <h2>Test My Ubuntu VM</h2>
+        <p>
+            Finally I'm ready to test my setup using the image I just created. I start the container in detached mode (<icode>-d</icode>) and expose container port 22(ssh) to a random port on my host machine(9999) with the expose flag(<icode>-p</icode>). The ending arguments tells the container to start the ssh server on startup and then wait and listen for incoming ssh connections.
+            <div class='img-txt'>
+                <img src='../imgs/Docker-8.png' style='max-width:100%'>
+            </div>
+        </p>
+        <p>
+            As shown above, I can successfully ssh into the container through port 9999 with my credentials. I can also see that the container is running with <icode>docker ps -a</icode> or through the Docker application.
+            <div class='img-txt'>
+                <img src='../imgs/Docker-9.png' style='max-width:100%'>
+            </div>
+        </p>
+        <p>
+            To stop the container, I can click the stop icon in Docker application or ssh into the machine and kill the <icode>sleep</icode> process before exiting.<br>
+            To start the container after it is stopped, click the start icon in the Docker application or run <icode>docker start [container_name]</icode>.
+        </p>
+
+        <h2>Done</h2>
+        <p>
+            Now I have a working VM that can boot up and restart within seconds, my life will definitely be easier :).
+        </p>
+
+        <h3>Useful Links/References:</h3>
+        <p>
+            <a href='https://www.cyberciti.biz/faq/linux-start-sshd-openssh-server-command/'>Start ssh service without using systemctl</a><br>
+            <a href='https://docs.docker.com/reference/'>Docker command line reference</a><br>
+        </p>
+    </div>
+</div>

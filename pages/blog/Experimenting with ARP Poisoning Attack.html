@@ -1,0 +1,185 @@
+<!-- Let's start with the basic concept of ARP Poisoning. As we know, every device in our home network is somehow connected to the router, either through ethernet cable or Wi-Fi signals. -->
+<!-- study-notes -->
+<div id='content-wrapper'>
+    <div id='content'>
+        <h1>Experimenting with ARP Poisoning Attack</h1>
+        <p id='content-date'>Jun. 3, 2020, 00:32:04</p>
+        <p>
+            I don't mean to update so soon after the previous post, but I finished my project a little bit early (thanks to my hard work two weeks ago). So I decided to use this free afternoon doing some related side-project to keep myself busy.
+        </p>
+
+        <p>
+            The project I finished early was about router design. Consequently, I think it's more than fitting to try the ARP Poisoning Attack I once heard about. I didn't dare to try it out before because I'm afraid of messing up our home router or unadvertently sniffing on my roomate's laptop (ethical hacking in mind). Now I've learned a lot from my computer network class. I feel confident in my ability to keep things secure and under control. So here we go.
+        </p>
+
+        <h2>Concept</h2>
+        <p>
+            Let's start with the basic concept of ARP Poisoning. As we know, every device in our home network is somehow connected to the router, either through ethernet cable or Wi-Fi signals. Our home router, as the only gateway to the outside world, is crucial in protecting our network traffic from malicious attacks. It indeed fulfills such duty in multiple ways. For example, our router rejects messages coming toward invalid ports and uses a technique called NAT (Network Address Translation or IP Masquerading) to hide the real host's local IP address behind a single outside IP address. Each message coming in only knows the router's interface and nothing about individual host, so outside machines can't directly communicate and operate on local machines. This scheme is quite robust in protecting outside attacks. But what about attacks within a network?
+        </p>
+        <p>
+            ARP Poisoning Attack is an example of inside attack. Within a network, we often assume every device will behave by the rules and doesn't mess with each other. Under this assumption, every device can communicate its identity (MAC address) and IP address freely and openly within this network. This assumption may hold in a home network, but in an open network, like public Cafe, restaurants and hotels, this assumption falls apart.
+        </p>
+        <p>
+            To illustrate, let's imagine the router as a central mediator and gateway for the network. Its only job is to send messages from outside world to the correct local host and vice versa, besides having to identify itself as the router when other hosts talk to it. In order to skillfully fulfill such duty, the router needs to keep a namebook of every host on the network so that it can send messages from outside world to the exact user and not others. The registration of each host's name is done by sending and receiving ARP request and reply packets. To make a long story short, it works like this:
+        </p>
+        <div class='img-txt'>
+            <img src='../imgs/ARP-1.png' width='60%' >
+        </div>
+
+        <p>
+            All is well and good if every host stick to the rule, that is, only respond when its name is called. But what if someone breaks the rule?
+        </p>
+
+        <div class='img-txt'>
+            <img src='../imgs/ARP-2.png' width='70%' >
+        </div>
+
+        <p>
+            In this case, the misbehaving host does two things simultaneously. One is to make the router think itself is Bob and the other is to make Bob believe it is now the router. The consequence is, Bob will hand over it's outgoing network data to the misbehaving host (MH), believing it's the new router, while the router will send outside messages, destined toward Bob, to the MH. In both these cases, the MH becomes the middleman and all traffic coming and going between Bob and the router will be seen.
+        </p>
+
+        <p>
+            This is the basic idea behind ARP Poinsoing, also an example of Man-in-the-Middle-Attack. This name is explanatory - the victim thinks it's talking to the router directly, while there's someone in the middle of the communication, invisible to both parties and secretly hijacking data.
+        </p>
+
+        <h2>Procedures</h2>
+        <p>
+            There are many resources online about how to start an ARP Spoofing Attack. The general steps are as follows (using a Linux machine):<br>
+        </p>
+        <ol>
+            <li>Open ipv4 port forwarding</li>
+            <li>Find the victim host's IP address</li>
+            <li>Use <icode>arpspoof</icode> command to launch the attack</li>
+            <li>Analyze traffic using tcpdump or wireshark, etc</li>
+        </ol>
+        <br>
+
+        <p>
+            The detailed steps are (adapted from <a href='https://www.youtube.com/watch?v=RTXAUJ2yqCg'>here</a>):<br>
+        </p>
+
+        <ol>
+            <li>
+                <h3>Open port forwarding</h3>
+                <p>
+                    Run <icode>echo 1 > /proc/sys/net/ipv4/ip_forward</icode> or<br>
+                    <icode>sysctl -w net.ipv4.ip_forward=1</icode> using <icode>sysctl</icode>
+                </p>
+            </li>
+            <li>
+                <h3>Find victim's IP address</h3>
+                <p>
+                    We can use <icode>netdiscover -i [interface]</icode> to scan the entire network for connected devices.
+                </p>
+            </li>
+            <li>
+                <h3>Launch the attack</h3>
+                <p>
+                    Before running <icode>arpspoof</icode>, we need several pieces of information. First we need to know the interface name of the network that we want to poison. Running <icode>ifconfig</icode> or <icode>ip link</icode> will do the trick.
+                </p>
+                <p>
+                    Then we need to know the router's IP address. The default gateway is often 192.168.1.1 or we can use <icode>ip route</icode> to find the default gateway address.
+                </p>
+                <p>
+                    Now we are ready to run <icode>arpspoof -i [interface] -t [victim ip] -r [router ip]</icode> to start our attack. After the program has initiated, we can open up Wireshark and start capturing packets.
+                </p>
+            </li>
+            <li>
+                <h3>Carefully inspect packets</h3>
+                <p>
+                    Now we have all the packets logged in Wireshark so go ahead and do a treasure hunt!
+                </p>
+            </li>
+        </ol>
+
+        <h2>Setup</h2>
+        <p>
+            My setup includes my desktop (victim), my Raspberry Pi (stub webserver) and my laptop (snooper). I've setup a fake webserver on my Raspberry Pi with minimal/no security checks for the purpose of presenting. When accessed, the server will send back a fake login screen (figure 1) and greet us once we filled in our credentials (figure 2). An illustration of the setup is given in figure 3.<br>
+        </p>
+
+        <div class='img-txt'>
+            <img src="../imgs/ARP-4.png" />
+            <h3>Figure 1</h3>
+        </div>
+
+        <div class='img-txt'>
+            <img src="../imgs/ARP-5.png" />
+            <h3>Figure 2</h3>
+        </div>
+
+        <div class='img-txt'>
+            <img src="../imgs/ARP-6.png" />
+            <h3>Figure 3</h3>
+        </div>
+
+        <p>
+            <b>Important Note:</b> For reasons discussed later, we will make the Raspberry Pi both the web server and the router. The traffic between client and server still holds, only that we cut short the step from the router to the webserver.
+        </p>
+
+        <h2>Experiment</h2>
+        <p>
+            After following the procedure afore mentioned, our <icode>arpspoof</icode> program started sending ARP packets to both the victim and the router successfully. Now we open Wireshark and started the login process on the victim machine (Figure 4). Then we submit and get back our greeting message (Figure 5).
+        </p>
+
+        <div class='img-txt'>
+            <img src="../imgs/ARP-7.png" />
+            <h3>Figure 4</h3>
+        </div>
+
+        <div class='img-txt'>
+            <img src="../imgs/ARP-8.png" />
+            <h3>Figure 5</h3>
+        </div>
+        <br>
+        <br class='dots'>
+        <br>
+
+        <p>
+            At the meantime, our snooper has successfully captured packets coming and going from our victim host. The packets of interests here are the HTTP GET and POST request made from the host. These contain information the victim hosts send to the server. If that information is not properly encrypted, in this case it doesn't, then all secrets are visible to the snooper.
+        </p>
+
+        <div class='img-txt'>
+            <img src="../imgs/ARP-9.png" width=100%;/>
+            <h3>Figure 9</h3>
+        </div>
+
+        <div class='img-txt'>
+            <img src="../imgs/ARP-10.png" />
+            <h3>Figure 10</h3>
+        </div>
+
+        <p><b>Oops!</b></p>
+
+        <h2>Reflection</h2>
+        <p>
+            As you've seen this is just a toy application and there are many addtional efforts in making this example work.
+        </p>
+        <p>
+            To start with, I made my webserver the poisoned router instead of my actual router because in this example the webpage I want to access is within my network. This means the traffic never goes to my router. Instead, the traffic directly goes to my Raspberry Pi through the LAN hub. This doesn't make my experiment invalid because we successfully injected our snooper within the traffic flow, who shouldn't be there.
+        </p>
+
+        <p>
+            In addition, I purposefully did no encryption on the data transfer. In real world, almost all data is encrypted over the network. There are also many other ways to protect transferred data that is pretty much standard nowadays. For example, did you notice the "Not Secure" mark in the example and on many not-well maintained webpages you've probably visited? This is Chrome telling you that the website is using HTTP protocol instead of HTTPS. The addtional '<b>S</b>' stands for <b>S</b>ecure (connection). HTTPS is pretty much today's standard for enterprise-level websites and it encrypts data as well as doing many other security checks (for more information, see <a href='https://www.youtube.com/watch?v=-enHfpHMBo4'>here</a>).
+        </p>
+        <p>
+            On a lower-level, routers are becoming more sophisticated and robust against malicious attacks. Many routers even have the capability to stop ARP Poisoning (see <a href='https://security.stackexchange.com/questions/34142/is-it-possible-that-my-home-router-is-preventing-my-arp-poisoning-attack'>here</a>).
+        </p>
+        <p>
+            So overall, this is a successful side-project. I really learned a lot about protocols and router designs when I was doing this project. Of course, I had many failures (ie. spoof on a virtual machine that is on a different subnet or between hosts connected to Wi-Fi and ethernet), but I find those failure more rewarding than finishing the project itself.
+        </p>
+            <h3>Code Used</h3>
+            <p>
+                <a href='../files/index.html'>index.html</a> and <a href='../files/server.js'>server.js</a>
+                <p>Put both file in a folder and run <icode>npm init</icode> followed by <icode>node server</icode>. The server will be hosted on port 8080.</p>
+        </p>
+
+        <h3>Useful Links/References:</h3>
+        <p>
+            <a href='https://www.youtube.com/watch?v=RTXAUJ2yqCg'>ARP Poisoning Tutorial</a><br>
+            <a href='https://linuxconfig.org/how-to-turn-on-off-ip-forwarding-in-linux'>IPv4 port forwarding</a><br>
+            <a href='https://www.digicert.com/blog/not-secure-warning-what-to-do/#:~:text=The%20reason%20you%20are%20seeing,the%20%E2%80%9CNot%20Secure%E2%80%9D%20warning.'>"Not Secure" in Chrome</a><br>
+            <a href="https://www.youtube.com/watch?v=-enHfpHMBo4">Man-in-the-middle Attack</a><br>
+            <a href='https://security.stackexchange.com/questions/34142/is-it-possible-that-my-home-router-is-preventing-my-arp-poisoning-attack'>DAI configuration prevents ARP Poisoning</a><br>
+        </p>
+    </div>
+</div>

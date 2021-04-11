@@ -1,0 +1,158 @@
+<!-- To be honest, I've been arguing with myself on the topic of this post for quite a while but didn't dare to write it out. Mainly because AI & ML is such a hot topic which my friends are very passionately invovled with and that I, a novice who have only taken/have been taking two AI-related courses, am not qualified to talk about (the two courses are "Introduction to Computer Vision" and "Introdution to AI Search and Reasoning"). However, even with my limited exposure to AI, I feel AI is such a magic yet unpredictable thing that give me awe and uneasiness at the same time. -->
+<!-- thoughts -->
+<div id='content-wrapper'>
+    <div id='content'>
+        <h1>Talk About AI</h1>
+        <p id='content-date'>Oct. 4, 2020, 18:15:45</p>
+
+        <p>
+            To be honest, I've been arguing with myself on the topic of this post for quite a while but didn't dare to write it out. Mainly because AI & ML is such a hot topic which my friends are very passionately invovled with and that I, a novice who have only taken/have been taking two AI-related courses, am not qualified to talk about (the two courses are "Introduction to Computer Vision" and "Introdution to AI Search and Reasoning"). However, even with my limited exposure to AI, I feel AI is such a magic yet unpredictable thing that give me awe and uneasiness at the same time.
+        </p>
+
+        <h2>Achievements of AI</h2>
+        <p>
+            I'd be serving you a great injustice to doubt your ability to come up with cases where AI has revolutionived our world. So please, imagine something in your life that is powered by AI. Imagine how greate it is and how inconvient life would be without it. Easy, huh? OK, I've made my point. Let's move on.
+        </p>
+
+        <h2>Uneasiness of AI</h2>
+        <p>
+            When talking about the problem with AI, or to some, the apocalyptic future of AI, one would most likely think about the movie "Matrix", even more so if that someone does not have a strong study in the field of computer science. The omnipresent and omnipotent AI lord who controls the Earth and any living creature on it for sure fortells a scary story. However, as most people come to realize, our current AI technology is a million miles away from being able to creat that powerful AI lord. So, we believe our lives can't be tempered with by AI, at least for a long long forseeable future.
+        </p>
+        <p>
+            Or not?
+        </p>
+        <p>
+            As the recent documentary on Netflix - "<a href='https://www.thesocialdilemma.com/'>The Social Dilemma</a>" will tell you, AI algorithms that are powering social medias today are tracking users' data and using it as training sets to make customized recommendations to make users addicted. This AI model that is trained to predict users' behavior and capture users' interests is wrapping people in their own bubbles, by recommending contents that suits their existing ideology and beliefs, be it good or bad. Users of social media are in their own "Truman Show", only seeing the part of the world that is reflected upon their own mindset, like looking into a mirror.
+        </p>
+        <p>
+            The outcome is twofold. One is that incorrect facts and extreme views spread fast. New conspiracy theories posted by someone get recommended to those who thinks the same. Extreme views, like political opinions, also get delivered to those who think the same but not the opposite. Therefore, the consequence is that people become less likely to agree with each other, given they only see the part of the world that is reflected upon them. The documentary suggests social turmolt happening around the world nowadays reflect how people are becoming more extreme in views, which can be a direct result of social media.
+        </p>
+
+        <h2>Whose fault?</h2>
+        <p>
+            This is a very legitimate question which I ask it myself constantly when I was thinking about writing this post. I believe, in the end, that it's not the AI technology's fault but our, the programmers and AI designers', fault who use such technology.
+        </p>
+
+        <h2>Fault 1: Fail to understand the innerworkings of AI</h2>
+        <p>
+            Let's start with the most obvious reason, we still don't understand how an AI program really operates and not to say to predict and control it. Granted, we can control the algorithm in use, the data for input, and what optimization method to use, but when the program runs, it's on its own.
+        </p>
+        <p>
+            I don't believe one can predict whether an AI program will predict a certain cat picture to be a cat or a dog, unless really testing it on the model. If it predicts correctly on this picture and a billion other cat pictures, then we say the model works; otherwise, we slightly tweak some magic numbers, and test the program again until it works. Even so, when given a new picture, one still can't be sure the program will predict correctly until it is tested.
+        </p>
+        <p>
+            If such is the case, then what's the difference between AI and a novice programmers' way of fixing a bug - to trial and error? Changing parameter names, moving statements around, add and delete commas and hoping the program compiles. To quote from Professor James Mickens - "Machine learning is the CS equivalent of the egg drop experiment". One doesn't know whether it will work unless to drop the egg.
+        </p>
+        <br>
+        <p>
+            You know I was a chemistry major for two years before I switched to CS. Some people always think chemistry is a "practical" study and chemists are just people playing with chemicals and come up with theories as to why certain A+B->C. Then there are people saying CS is the field of study that is really built on math and is pure logical. Well, I don't think this applies to AI.
+        </p>
+        <p>
+            The process of tweaking parameters and optimization functions reminds me a lot of the process of solving an electron pushing mechanism, which I learned in my organic chemistry class.
+            <div class='img-txt'>
+                <img src='../imgs/AI-1.png' width='100%'>
+                <h3>Example electron pushing mechanism diagram</h3>
+            </div>
+        </p>
+        <p>
+            Diagrams as such are used to explain how reactions take place based on electrons moving and bonds creating and breaking. A common test problem is as such - "Given A+B=C+D, please draw the electron pushing diagram".
+        </p>
+        <p>
+            One thing to know is that there isn't a one-fits-all set of rules to draw such diagrams. It often takes some prior knowledge and some luck to choose the right mechanism in order to draw the correct diagram. How I tackle this type of problems is to first draw the reactants on the left and the products on the right, adn then I just try all related mechanisms I learned and see which mechanism can lead me from the left side to the right.
+        </p>
+        <p>
+            Doesn't this process sound familiar to the AI approach of solving problems? We have the data on the left and the expected answer on the right. Our job is to find such a link, no matter what it is and how it's achieved, that takes us from one side (data space) to the other (solution space), without questioning too much for the method in between.
+            <div class='img-txt'>
+                <img src='../imgs/AI-2.png' width='100%'>
+                <h3>Comparison between two processes</h3>
+            </div>
+        </p>
+        <p>
+            In fact, choosing the right mechanism is not that idiosyncratic as it sounds like in chemistry. There's always a proper and scientific explaination why one mechanism is better. My organic chemistry professor always explained it after the test. However, I didn't see much of such reflections on the method in use in most AI tutorials I saw. Even if there were explainations of why things work in this way or comparisons between two methods, such explaination was often based on experiences. In other words, one method works because it worked before in that other similar problem. There isn't a theory or proved fact to rely upon as in chemistry.
+        </p>
+        <p>
+            This unproven & trial-and-error nature of AI made me uncomrfortable. Even though I'm not good at math, I just feel safe to use something when knowing there is such paper that I probably don't understand but prove something works based on math or, at least prove how (un)destructable it can be so that I'm prepared.
+        </p>
+
+        <h2>Fault 2: Dilemma of data</h2>
+        <p>
+            One reason we develop AI is that we hope it can ilustrate and enlighten us on problems we can't understand ourselves. For example, we don't fully understand human vision, I mean to the extent of making artificial eyes that can interpret meanings, so we train AI models to do that for us. We can't fully capture the full grammer and uses of a language to the extent of being able to translate between languages solely based on a handful grammer rules, so we train AI models to translate between languages.
+        </p>
+        <p>
+            However, in all those cases, we rely on one thing - <b>data</b>. And here comes a dilemma, we don't understand something fully, so we want to train an AI model that finds patterns on its own and helps us analyze the problem. Yet if we don't understand our problem, and therefore, how good is our data, then how can we be sure the model we train is correct at all?
+        </p>
+        <p>
+            This chicken-egg problem is sometimes easy to solve. For example, in the visual detection case, data is just images and the corresponding labels, which we are sure is correct. We have a way to check our data because we see the image using our human eyes and make a detection. Since any reasonable person wouldn't say a digit 1 is a 9, we are sure our dataset is good. Similarly, in the case of language translation, we can check our data by showing the translation to a bilingual and see if the content match.
+            <div class='img-txt'>
+                <img src='../imgs/AI-3.png'>
+                <h3>Example MNIST digit data training set</h3>
+            </div>
+        </p>
+        <p>
+            For other more complicated questions, the answer gets tricky. For example, in the case of language generation, we can't check our data for "validity", so to speak, because different people say the same thing differently. We can't fully capture how I speak Enligsh and how a native Enligsh speaker do to pick out representative data to refelct that. Even among native Enligsh speakers, the sentence structure or choice of words may differ. Therefore, our efforts to language generation and chat bots are far less fruitful than language translation and Natural Language Processing (NLP).
+        </p>
+        <p>
+            Another dilemma of training AI, which is more imaginery yet inevitable happens when human nature interacts with data. Professor James gave the example of AI chat bot called Tay released by Microsoft in 2016. Tay would respond to people's tweets on Twitter and learn from those conversations to better mimic a real person. However, as people started posting racial and illegal content to Tay, she picked up those languages and started tweeting inappropriate contents.
+        </p>
+        <p>
+            This incident, although seems like a simple design flaw, does highlight a larger potential problem of whether we want our data to be as objective as possible, to represent the thing we study fully, or to be stripped of some part that is unwanted.
+        </p>
+        <p>
+            It's logical to think that to make real intelligence similiar to us, we would want the data to be as representative as possible, which means including those bad language that humans do say. Yet people feel unexecusable and creepy when AI say them.
+        </p>
+        <p>
+            Considering those dilemmas when collecting data, it's understandable that AI malfunctions like Tay's tweets can happen. However, a safe strategy is needed to prevent bad things from happening at large scales with great social impacts. We don't want to create an AI Frenkeinstain, not because it's scary, but because it's tragic, both for the society and the monster itself should it has feelings one day.
+        </p>
+
+        <h2>Fault 3: Fail to realise the responsibility for society</h2>
+        <p>
+            Computer science is a quite a young field of study. Looking back to the history of computing to Alan Turing, we see that computing power was created as a weapon against the Nazi. Many recent advancements in computer equipments and computing ideologies exclusively came out of military or government needs. For example, the ARPANET, which is the precursor of the Internet, was first developed by US Department of Defense for military communications.
+            <div class='img-txt'>
+                <img src='../imgs/AI-4.png' width='100%'>
+                <h3>ARPANET Logical Map</h3>
+            </div>
+        </p>
+        <p>
+            The point I want to make is that advancements in the computing world in the past have traditionally been under the supervision and direction of governments or other agencies which are managed and contained.
+        </p>
+        <p>
+            Within recent 30-40 years, the computing world has been opened to everyone with commercialized personal computers and the creation of the internet. Even more recently, the computing industry has already come to the current state of revolutionizing every aspect of people's life. Companies forming and new industries created to address emerging new problems.
+        </p>
+        <p>
+            It seems to me, today's computing industry is leading the development of many other fields (biology, chemistry, traditional engineering, etc). Compared to the past, computing industry is booming and not so limited by any institutions even government. In fact, many other fields depend on the computing industry and many investors look up to it for the next investment opportunity to make the next generation high-tech products.
+        </p>
+        <p>
+            Under such circumstance, the computing world is under much higher social responsibilities than before. As "The Social Dilemma" made clear, government regulations aren’t keeping up with the advancement of new technology. People's mind is not prepared to fully understand them either. Therefore, it's up to the computing industry to figure out what is socially responsible and what's not. The old days of making something and then move on to the next without caring how it is used and by whom won't do anymore.
+        </p>
+        <p>
+            AI and ML, this new yet not so new field of study is the current apple of the eye to the computing industry. It has very high potential considering its last blooming was quite a long time ago in computing industry terms, but this path must be taken carefully.
+        </p>    
+
+        <h2>An Interesting Discovery</h2>
+        <p>
+            When I first had the idea of writing this, I had a quite strong feeling against AI. I felt something is fundamentally wrong in the AI's approach against my ideology. I didn't realise what principal it was, until I watched Professor James's keynote speech at the 2018 USENIX Security Symposium yesterday and found this slide:
+            <div class='img-txt'>
+                <img src='../imgs/AI-5.png' width='100%'>
+                <h3>Slide by Professor James Mickens</h3>
+            </div>
+        </p>
+        <p>
+            So indeed, I like computer security, the fundamental of which is to ensure programs are within checks. I believe programmers must be responsible for the code they write. When my program gives wrong outputs, I want to say confidently that "I know what goes wrong. I'll fix that", instead of "I have no idea. Let me tweak my parameters and try again. My model should be 97% accurate by the way...".
+        </p>
+        <p>
+            Well I believe AI is not my interests, but I'm curious to see what people can achieve with it.
+        </p>
+        <p>
+            Finally, thanks to Professor James for the entertaining and insightful speech. It helped me clear my mind and organize my thoughts in this post.
+        </p>
+
+        <h3>Useful Links/References:</h3>
+        <p>
+            <a href='https://en.wikipedia.org/wiki/Arrow_pushing#/media/File:AcylSubstitution.svg'>Electron Pushing Example Image</a><br>
+            <a href='https://en.wikipedia.org/wiki/File:MnistExamples.png'>MNIST Digits Example Image</a><br>
+            <a href='https://en.wikipedia.org/wiki/Tay_(bot)'>AI Bot Tay Wiki</a><br>
+            <a href='https://en.wikipedia.org/wiki/ARPANET#/media/File:Arpanet_logical_map,_march_1977.png'>ARPANET Logical Map Image</a><br>
+            <a href='https://www.usenix.org/conference/usenixsecurity18/presentation/mickens'>Professor James Mickens's Speech</a><br>
+        </p>
+    </div>
+</div>

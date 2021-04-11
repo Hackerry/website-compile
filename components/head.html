@@ -1,0 +1,16 @@
+<head>
+    <!-- External Resource Links -->
+    <link rel="shortcut icon" type="image/x-icon" href="{{.RootPath}}/favicon.ico" />
+    <script src="https://kit.fontawesome.com/c9acfba105.js" crossorigin="anonymous"></script>
+    <script type='text/javascript'>
+        function gotop() {
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        }
+    </script>
+
+    <!-- Custom Styles -->
+    {{range .StyleFiles}}
+    <link rel='stylesheet' href='{{.}}' />
+    {{end}}
+</head>

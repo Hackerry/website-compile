@@ -1,0 +1,118 @@
+<!-- Let's just start with the code this time. It's doing a straightforward job, apply each operation in the operations list to the initial value 1 and output the final result. -->
+<!-- study-notes -->
+<div id='content-wrapper'>
+    <div id='content'>
+        <h1>GO About with Attitude</h1>
+        <p id='content-date'>Aug. 19, 2020, 23:19:45</p>
+
+        <p>
+            Let's just start with the code this time:
+        </p>
+
+        <ul class='ccode'>
+            <li><pre></pre></li>
+            <li><pre><span style='color:#2196f3'>package</span> main</pre></li>
+            <li><pre><span style='color:#2196f3'>import</span> (</pre></li>
+            <li><pre>       <span style='color:#d8721a'>"fmt"</span></pre></li>
+            <li><pre>       <span style='color:#d8721a'>"strconv"</span></pre></li>
+            <li><pre>       <span style='color:#d8721a'>"strings"</span></pre></li>
+            <li><pre>)</pre></li>
+            <li><pre><span style='color:#2196f3'>var</span> operations = <span style='color:#2196f3'>map</span>[string]string {</pre></li>
+            <li><pre>       <span style='color:#d8721a'>"add 1"</span>: <span style='color:#d8721a'>"+1"</span>,</pre></li>
+            <li><pre>       <span style='color:#d8721a'>"add 2"</span>: <span style='color:#d8721a'>"+2"</span>,</pre></li>
+            <li><pre>       <span style='color:#d8721a'>"add 10"</span>: <span style='color:#d8721a'>"+10"</span>,</pre></li>
+            <li><pre>       <span style='color:#d8721a'>"time 1"</span>: <span style='color:#d8721a'>"*1"</span>,</pre></li>
+            <li><pre>       <span style='color:#d8721a'>"time 2"</span>: <span style='color:#d8721a'>"*2"</span>,</pre></li>
+            <li><pre>       <span style='color:#d8721a'>"time 5"</span>: <span style='color:#d8721a'>"*5"</span>,</pre></li>
+            <li><pre>}</pre></li>
+            <li><pre><span style='color:#2196f3'>func</span> <span style='color:#ffeb3b'>main</span>() {</pre></li>
+            <li><pre>       <span style='color:#2196f3'>for</span> i := <span style='color:#4caf50'>0</span>; i &lt; <span style='color:#4caf50'>5</span>; i++ {</pre></li>
+            <li><pre>               <span style='color:#ffeb3b'>calculate</span>()</pre></li>
+            <li><pre>       }</pre></li>
+            <li><pre>}</pre></li>
+            <li><pre><span style='color:#2196f3'>func</span> <span style='color:#ffeb3b'>calculate</span>() {</pre></li>
+            <li><pre>       value := <span style='color:#4caf50'>1</span></pre></li>
+            <li><pre>       <span style='color:#2196f3'>var</span> newValue <span style='color:#2196f3'>int</span></pre></li>
+            <li><pre>       <span style='color:#2196f3'>for</span> _, v := <span style='color:#2196f3'>range</span> operations {</pre></li>
+            <li><pre>               newValue = <span style='color:#ffeb3b'>doOperation</span>(value, v)</pre></li>
+            <li><pre>               fmt.<span style='color:#ffeb3b'>Printf</span>(<span style='color:#d8721a'>"%d%s - %d"</span>, value, v, newValue)</pre></li>
+            <li><pre>               value = newValue</pre></li>
+            <li><pre>       }</pre></li>
+            <li><pre>       fmt.<span style='color:#ffeb3b'>Printf</span>(<span style='color:#d8721a'>"Final result: %d"</span>, value)</pre></li>
+            <li><pre>}</pre></li>
+            <li><pre><span style='color:#2196f3'>func</span> <span style='color:#ffeb3b'>doOperation</span>(value <span style='color:#2196f3'>int</span>, operation string) <span style='color:#2196f3'>int</span> {</pre></li>
+            <li><pre>       <span style='color:#2196f3'>if</span> strings.<span style='color:#ffeb3b'>HasPrefix</span>(operation, <span style='color:#d8721a'>"+"</span>) {</pre></li>
+            <li><pre>               i, _ := strconv.<span style='color:#ffeb3b'>Atoi</span>(operation[<span style='color:#4caf50'>1</span>:])</pre></li>
+            <li><pre>               value += i</pre></li>
+            <li><pre>       } <span style='color:#2196f3'>else</span> <span style='color:#2196f3'>if</span> strings.<span style='color:#ffeb3b'>HasPrefix</span>(operation, <span style='color:#d8721a'>"*"</span>) {</pre></li>
+            <li><pre>               i, _ := strconv.<span style='color:#ffeb3b'>Atoi</span>(operation[<span style='color:#4caf50'>1</span>:])</pre></li>
+            <li><pre>               value *= i</pre></li>
+            <li><pre>       }</pre></li>
+            <li><pre>       <span style='color:#2196f3'>return</span> value</pre></li>
+            <li><pre>}</pre></li>
+        </ul>
+
+        <p>
+            It's doing a straightforward job, apply each operation in the <icode>operations</icode> list to the initial value 1 and output the final result.
+        </p>
+        <p>
+            In mathematical terms, the process is just like this: <icode>(1+1+2+10)*1*2*5=140</icode>.
+        </p>
+
+        <p>
+            Now if I want to decide what the final result will be, I will have to decide the order of each entry being retrieved from the map.
+        </p>
+
+        <h2>Review HashMap</h2>
+        <p>
+            There are many thoughts here. The looping order may be the same as the insertion order, as is implemented in the Javascript Map object. It can also take the natural ordering of the keys as in the case of Java TreeMap. Or there may not be an obvious ordering at all as in Java HashMap, but that specific order in the first run will not change in future runs given that the map structure doesn't change with adding/deleting keys. This outcome is in accordance with Java's "<b>Write once, run anywhere</b>" ideology - to make runtime behavior predictable and exact given the same set of code.
+        </p>
+        <p>
+            Also, Java's Hashmap implementation conforms quite well to how hashmap works theoretically. As a review from my data structure class, an ideal hashmap ensures constant lookup time of values by associating each value with a unique hash key, generated by a hash function. Then based on the hash key, values are put into corresponding slots/bins for future lookups. In case of a lookup, the same deterministic hash key is generated again using the function and previously stored value is retrieved from the bin.
+        </p>
+        <p>
+            The ratio between the number of bins that have been taken up and the total number of bins allocated is called the "<b>load factor</b>". As demonstrated by the famous <a href="https://en.wikipedia.org/wiki/Birthday_problem">Birthday problem</a>, around 60% full is where collisions will significantly impact the performance of lookups by having too many values assigned to the same bin, resulting in a worst case linear <icode>O(n)</icode> runtime search. Therefore, real life hashmap implementations will scale up and down based on the load factor to balance space and efficiency. This operation involves allocating a bigger hashmap, recalculating the new hash keys for existing values and copy them over. Because of this scaling, the looping order of Hashmap in Java may change between runs given that a scaling happens, but otherwise, the looping order is absolutely the same between runs since the exact same code is run on the exact same hashmap structure with the exact same set of values.
+        </p>
+
+        <h2>GO's Map Implementation</h2>
+        <p>
+            As I'm very familiar with Java's HashMap implementation, I was very confused about GO's randomized hashmap iterating behavior, as a GO newbie, when I first read about it. I came to know this pecularity when I encountered a bug that randomly failed my program. It happened because of an edge case that I failed to address in the step before iterating through the map, but it took me a fair amount of time to pinpoint that issue.
+        </p>
+        <p>
+            Based on my previous experiences, logic errors won't produce random results only wrong results. So the randomness sent me off track to check my inputs and environment settings until finally I circiled back to find the issue with a bunch of logging. The randomness in my error was in fact caused by GO map's random iteration order.
+        </p>
+        <br>
+        <br class='dots'>
+        <br>
+
+        <p>
+            After some researching, it seems that GO randomizes it's starting position when iterating through the map as can be seen from the <a href="https://golang.org/src/runtime/map.go#L826">source code comment</a>. As per this <a href="https://stackoverflow.com/a/55925880">StackOverflow post</a>, it seems this feature is introduced in GO v1 as a countermeasure towards bug-prune code that assumes hashmap's fixed looping order, and as a soft guard against worst time lookup time of <icode>O(n)</icode> should one choose to use a for loop.
+        </p>
+        <p>
+            Going back to the code earlier, given GO's random-access nature, the results should be different each run.<br>
+            And indeed, that is what happenes:
+        </p>
+        <ul class='ccode'><li><pre><span style='color:#9e9e9e'>// Sample Output</span></pre></li><li><pre><span style='color:#9e9e9e'></span><span style='color:#4caf50'>1</span>+<span style='color:#4caf50'>1</span>  <span style='color:#4caf50'>2</span></pre></li><li><pre><span style='color:#4caf50'>2</span>+<span style='color:#4caf50'>2</span>  <span style='color:#4caf50'>4</span></pre></li><li><pre><span style='color:#4caf50'>4</span>+<span style='color:#4caf50'>10</span>  <span style='color:#4caf50'>14</span></pre></li><li><pre>14*1  <span style='color:#4caf50'>14</span></pre></li><li><pre>14*2  <span style='color:#4caf50'>28</span></pre></li><li><pre>28*5  <span style='color:#4caf50'>140</span></pre></li><li><pre>Final result: <span style='color:#4caf50'>140</span></pre></li><li><pre>1*2  <span style='color:#4caf50'>2</span></pre></li><li><pre>2*5  <span style='color:#4caf50'>10</span></pre></li><li><pre><span style='color:#4caf50'>10</span>+<span style='color:#4caf50'>1</span>  <span style='color:#4caf50'>11</span></pre></li><li><pre><span style='color:#4caf50'>11</span>+<span style='color:#4caf50'>2</span>  <span style='color:#4caf50'>13</span></pre></li><li><pre><span style='color:#4caf50'>13</span>+<span style='color:#4caf50'>10</span>  <span style='color:#4caf50'>23</span></pre></li><li><pre>23*1  <span style='color:#4caf50'>23</span></pre></li><li><pre>Final result: <span style='color:#4caf50'>23</span></pre></li><li><pre>1*5  <span style='color:#4caf50'>5</span></pre></li><li><pre><span style='color:#4caf50'>5</span>+<span style='color:#4caf50'>1</span>  <span style='color:#4caf50'>6</span></pre></li><li><pre><span style='color:#4caf50'>6</span>+<span style='color:#4caf50'>2</span>  <span style='color:#4caf50'>8</span></pre></li><li><pre><span style='color:#4caf50'>8</span>+<span style='color:#4caf50'>10</span>  <span style='color:#4caf50'>18</span></pre></li><li><pre>18*1  <span style='color:#4caf50'>18</span></pre></li><li><pre>18*2  <span style='color:#4caf50'>36</span></pre></li><li><pre>Final result: <span style='color:#4caf50'>36</span></pre></li><li><pre><span style='color:#4caf50'>1</span>+<span style='color:#4caf50'>1</span>  <span style='color:#4caf50'>2</span></pre></li><li><pre><span style='color:#4caf50'>2</span>+<span style='color:#4caf50'>2</span>  <span style='color:#4caf50'>4</span></pre></li><li><pre><span style='color:#4caf50'>4</span>+<span style='color:#4caf50'>10</span>  <span style='color:#4caf50'>14</span></pre></li><li><pre>14*1  <span style='color:#4caf50'>14</span></pre></li><li><pre>14*2  <span style='color:#4caf50'>28</span></pre></li><li><pre>28*5  <span style='color:#4caf50'>140</span></pre></li><li><pre>Final result: <span style='color:#4caf50'>140</span></pre></li><li><pre>1*5  <span style='color:#4caf50'>5</span></pre></li><li><pre><span style='color:#4caf50'>5</span>+<span style='color:#4caf50'>1</span>  <span style='color:#4caf50'>6</span></pre></li><li><pre><span style='color:#4caf50'>6</span>+<span style='color:#4caf50'>2</span>  <span style='color:#4caf50'>8</span></pre></li><li><pre><span style='color:#4caf50'>8</span>+<span style='color:#4caf50'>10</span>  <span style='color:#4caf50'>18</span></pre></li><li><pre>18*1  <span style='color:#4caf50'>18</span></pre></li><li><pre>18*2  <span style='color:#4caf50'>36</span></pre></li><li><pre>Final result: <span style='color:#4caf50'>36</span></pre></li></ul>
+
+        <h2>Final Thoughts</h2>
+        <p>
+            As for whether this is a good feature or not, I'm towards accepting it.
+        </p>
+        <p>
+            Granted I was originally quite confused and mad at this rather peculiar feature as it adds something unnecessary to the implementation without obvious efficiency gain and made my debugging process difficult. However, this <a href="https://nathanleclaire.com/blog/2014/04/27/a-surprising-feature-of-golang-that-colored-me-impressed/">blog by Nathan LeClair</a> provides me with a new insight (and a great title for this post).
+        </p>
+        <p>
+            He sees this feature as part of an act against "<b>sloppy programming</b>" and reflects the strong attitude of GO designers to make things right rather than flexible. Honestly, I can't agree more. As a Java programmer from the beginning, I'm used to and appreciate languages that are exact and orderly. I think a good language should support programmers to succeed in what they try to achieve by implementing strict rules as part of the language design rather than allowing too much freedom and glazing over potential risks with some "reasonable" assumptions.
+        </p>
+        <p>
+            What I like about C-like languages is that, first of all, it's full-fledged to produce working code in any kind of settings, although less effectively in some cases. Then it's the ability to customize everything to the programmer's wishes without interfering too much. The language itself should not be a polished user program in itself that entertains programmers, but rather as a toolkit that empowers them.
+        </p>
+
+        <h3>Useful Links/References:</h3>
+        <p>
+            <a href="https://en.wikipedia.org/wiki/Birthday_problem">Birthday Problem Wiki</a><br>
+            <a href="https://golang.org/src/runtime/map.go#L826">GO map Source Code</a><br>
+            <a href="https://nathanleclaire.com/blog/2014/04/27/a-surprising-feature-of-golang-that-colored-me-impressed/">Nathan's Post</a><br>
+        </p>
+    </div>
+</div>

@@ -1,0 +1,127 @@
+<!-- As programmers, we've definitely used Linux some time in our lives before. The switch from Windows to Linux was not easy for me when I first started using Linux in my entry-level programming courses. It was a long learning curve that even today I still found new things that I have to learn in Linux. -->
+<!-- study-notes -->
+<div id='content-wrapper'>
+    <div id='content'>
+        <h1>Differences Between Windows and Linux</h1>
+        <p id='content-date'>Jan. 24, 2021, 23:24:45</p>
+
+        <p>
+            As programmers, we've definitely used Linux some time in our lives before.
+        </p>
+        <p>
+            The switch from Windows to Linux was not easy for me when I first started using Linux in my entry-level programming courses. It was a long learning curve that even today I still found new things that I have to learn in Linux.
+        </p>
+        <p>
+            Now that I've had a basic understanding of Linux, I can look back at Windows in a different perspective and compare them side by side. Here are some features I've found in the past that are different between the two OSes, which may come as unexpected if one assumes the similarities between the two.
+        </p>
+
+        <h2>Line Deliminater</h2>
+        <p>
+            The most obvious difference between these two OSes is that Windows uses <icode>\r\n</icode> as line deliminater while Linux uses <icode>\n</icode> only.
+        </p>
+        <p>
+            These line deliminaters are used everywhere in text files. They signal the end of previous line and the start of next line, kind of like how period signals the end of one sentence and the start of the next, only that line deliminaters are often invisible.
+        </p>
+        <p>
+            Here I have two files with <icode>file1</icode> using <icode>\r\n</icode> deliminater and <icode>file2</icode> using <icode>\n</icode> deliminater. I've created both files on both a Linux and a Windows machine. I've also opened the two files in VSCode in Windows.
+        </p>
+        <div class='img-txt'>
+            <img src='../imgs/LW-1.png'>
+            <h3>Line deliminaters are often invisible</h3>
+        </div>
+        <p>
+            It's obvious that the two files are different from the hexdump command <icode>xxd</icode>, yet both <icode>cat</icode> command output and editors like VSCode and Vim sometimes don't show that directly. However, if I were to pipe this input into a program, it will still see these two files as different.
+        </p>
+        <div class='img-txt'>
+            <img src='../imgs/LW-2.png'>
+            <h3>Programs can still see CR characters</h3>
+        </div>
+        <p>
+            This is why sometimes commands like <icode>strings.Split(input, "\r\n")</icode> or <icode>input.split("\n")</icode> would likely cause issues on different platforms.
+        </p>
+        <p>
+            If just a new line character sounds intuitive and simple, Windows's <b>CRLF</b> (Carriage Return & Line Feed) deliminater is not just an idiosyncratic choice in comparison. It is a relic from using typewriters (to read more <a href='https://en.wikipedia.org/wiki/Carriage_return'>here</a>). <b>CR</b> will put cursor to the front of the current line while <b>LF</b> moves the cursor one line down. Together, they complete the action we often imagined as starting a new line.
+        </p>
+
+        <h2>Tip 1 - Be Aware of Different Line Deliminaters</h2>
+        <p>
+            To remove <icode>\r</icode> characters from text files when files are copied from Windows to Linux, use <icode>tr</icode> or <icode>sed</icode>.<br>
+            For example, <icode>sed -i 's/\r\n/\n/g' [some file]</icode>.
+        </p>
+        <p>
+            Windows most times can still correctly treat one single <b>LF</b> character as a valid line deliminaterread.
+        </p>
+        <p>
+            VSCode has the option to switch line-endings if one needs to write programs for Linux on Windows.
+        </p>
+        <p>
+            Also, git can be configured to replace all <b>CRLF</b> to <b>LF</b> whenever working with git repos by setting <icode>core.autocrlf</icode> to <icode>false</icode>. Read more <a href='https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration'>here</a>.
+        </p>
+
+        <h2>Case Sensitivity</h2>
+        <p>
+            The next not so obvious difference is that Windows's file names are case insensitive while Linux's file names are case sensitive.
+        </p>
+        <p>
+            This means when I copy files from Linux to Windows with two of them named <icode>input.txt</icode> and <icode>Input.txt</icode>, only one of them can exist.
+        </p>
+        <div class='img-txt'>
+            <img src='../imgs/LW-3.png'>
+            <h3>Windows is case-insensitive</h3>
+        </div>
+        <p>
+            As shown here, although <icode>scp</icode> output clearly shows that two files are copied, only the first file remains in the directory. On inspecting the file's content, it's actually the second <icode>input.txt</icode> file's content. Hah!
+        </p>
+        <p>
+            It seems Windows keeps the filename of the first file with the distinctive name (in this case "<icode>Input.txt</icode>") but overwrites its content on receiving other files with the "same name" regardless of cases.
+        </p>
+
+        <h2>Tip 2 - Check File Names Before Copy</h2>
+        <p>
+            As the title suggests, it's prudent to check filenames before copy files from Linux to Windows.
+        </p>
+        <p>
+            Keeping a copy of the files to be copied to Windows is also a good practice.
+        </p>
+
+        <h2>Path String Slash Directions</h2>
+        <p>
+            On Windows, path strings contain only backward slashes (<icode>\</icode>). On Linux, path strings contain only forward slashes (<icode>/</icode>).
+        </p>
+        <p>
+            This makes it burdensome to write code that often deals with file paths. For example, if I want to access a file (<icode>password</icode>) in a base directory (<icode>baseDirectory</icode>), I can't just write <icode>baseDirectory + "/" + password</icode> and believe it will work on Windows.
+        </p>
+        <p>
+            To further complicate the issue, I can't just do a <icode>sed</icode> replace on slashes on all strings typed into the command line because Linux uses backward slashes to escape characters. Windows also uses forward slashes similarly.
+        </p>
+
+        <h2>Tip 3 - Universal Path Translation</h2>
+        <p>
+            Take use of language native packages like Golang's <icode>path/filepath</icode> package and Java's <icode>Path</icode> pacakge. Let them deal with this messy filepath string manipulations.
+        </p>
+        <p>
+            In a hybrid environment, for example running bash scripts in gitbash, use the <icode>$OS</icode> or <icode>$OSTYPE</icode> enviornment variables to detect system OS. Then write an if statement for each OS.
+        </p>
+        <div class='img-txt'>
+            <img src='../imgs/LW-4.png'>
+            <h3>Detect OS type in terminal</h3>
+        </div>
+        <p>
+            In gitbash, <icode>$OS</icode> is the real OS of the machine and <icode>$OSTYPE</icode> is the <a href='https://www.coin-or.org/OS/documentation/node16.html'>Minimal SYStem</a> which gitbash builds upon.
+        </p>
+
+        <br>
+        <br class='dots'>
+        <br>
+        <p>
+            These are the things I can think of right now. There are definitely more differences, but I think these listed here are the major ones which can definitely cause some confusions especially if people don't know about them.
+        </p>
+
+        <h3>Useful Links/References:</h3>
+        <p>
+            <a href='https://en.wikipedia.org/wiki/Carriage_return'>Carriage Return Wikipedia</a><br>
+            <a href='https://www.coin-or.org/OS/documentation/node16.html'>MSYS Homepage</a><br>
+            <a href='https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration'>Git Configuration Guide</a>
+        </p>
+    </div>
+</div>

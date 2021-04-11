@@ -1,0 +1,83 @@
+<!-- List of blogs section -->
+<div id='content-wrapper'>
+    <div id='content'>
+        <div id='blog-list-wrapper'>
+            <h1 id='category-title'>Blog</h1>
+            <i>
+                <h1 id='category-desc'>All Posts</h1>
+            </i>
+            <div id='tag-list-wrapper'>
+                <ul id='tag-list'>
+                    <li id='all'>All&nbsp;-&nbsp;<span id='all'></span></li>
+                    <li id='study-notes'>Study Notes&nbsp;-&nbsp;<span id='study-notes'></span></li>
+                    <li id='thoughts'>Thoughts&nbsp;-&nbsp;<span id='thoughts'></span></li>
+                </ul>
+            </div>
+            <ul id='blog-list'>
+                {{range .Posts}}
+                <li class='entry {{.Tags}}'>
+                    <div class='title-div'>
+                        <a href={{.Path}}>{{.Title}}</a>
+                        <p class='post-date'>{{.Date}}</p>
+                    </div>
+                    <p class='post-overview'>{{.Overview}}</p>
+                </li>
+                {{end}}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    var tagList = document.getElementById('tag-list');
+    var postList = document.getElementById('blog-list');
+    var category_title = document.getElementById('category-title');
+    var category_desc = document.getElementById('category-desc');
+
+    for (var l of tagList.children) {
+        var id = l.id;
+        var count = 0;
+        if (id == 'all') count = postList.children.length;
+        else {
+            for (var t of postList.children) {
+                if (t.classList.contains(id)) count++;
+            }
+        }
+        l.children[0].innerHTML = count;
+    }
+
+    // Switch category
+    for(var i = 0; i < tagList.children.length; i++) {
+        tagList.children[i].addEventListener("click", switchCategory)
+    }
+    function switchCategory(e) {
+        // console.log("Click " + e.target.id);
+        var id = e.target.id;
+        if (id === 'all') {
+            for (var l of postList.children) {
+                l.style.display = 'block';
+            }
+        } else {
+            for (var l of postList.children) {
+                if (l.classList.contains(id)) {
+                    l.style.display = 'block';
+                }
+                else l.style.display = 'none';
+            }
+        }
+        switch (id) {
+            case 'all':
+                category_title.innerHTML = 'Blog Posts';
+                category_desc.innerHTML = 'All blog posts';
+                break;
+            case 'thoughts':
+                category_title.innerHTML = 'Thoughts';
+                category_desc.innerHTML = '\"I Think Therefore I Am\"';
+                break;
+            case 'study-notes':
+                category_title.innerHTML = 'Study Notes';
+                category_desc.innerHTML = '\"Live and learn\"';
+                break;
+        }
+    }
+</script>

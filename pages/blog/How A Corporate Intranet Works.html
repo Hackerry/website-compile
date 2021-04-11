@@ -1,0 +1,152 @@
+<!-- Hi there! For the last 3 months, I was fortunate enough to work as a software engineering intern at Oracle. Although due to the pandemic, the internship was completely online, it was still a fun and educational experience for me. -->
+<!-- study-notes -->
+<div id='content-wrapper'>
+    <div id='content'>
+        <h1>How A Corporate Intranet Works</h1>
+        <p id='content-date'>Sep. 15, 2020, 22:18:09</p>
+
+        <p style='font-style:italic;border-bottom:2px dashed; margin-bottom:60px;padding-bottom:20px;'>
+            Fancy a little puzzle? Here is a very simple diagram of 3 very common network components/infrastructure (shown in red). What are they?<br>
+            <img src="../imgs/Box-1.png" style='width:100%;text-align:center;'>
+        </p>
+
+        <p>
+            Hi there! For the last 3 months, I was fortunate enough to work as a software engineering intern at Oracle. Although due to the pandemic, the internship was completely online, it was still a fun and educational experience for me. I met interns from different universities, as well as worked with people from different countries and backgrounds. I'm very grateful for the opportunity to work at Oracle. Huge thanks to all who helped me along the way! Wish you all the best!
+        </p>
+
+        <p>
+            Now back to the topic. During my internship, I was able to stay on top of my work when it comes to writing code. However, the one thing that absolutely gave me the most trouble and took me the longest to figure out was how to configure various things such that they can talk with each other properly and securely. In short, working within the corporate intranet was very challenging to me.
+        </p>
+
+        <p>
+            I admit that I'm not good at doing low layer IT works, mainly because my college studies often only resides in the upper application layer of the <a href="https://en.wikipedia.org/wiki/OSI_mode">OSI model</a>. Just as an illustration, I learned how to write efficient programs and how to debug my code in a logical way, but when my home network breaks or my computer crashes, the only solution I have is to reboot the router or my computer and hope it will work the next time. Despite this lack of exposure in classrooms, it's no excuse for me not to learn about things at the lower layers, and this internship has made me aware of just that. So, let's review things I've learned over the past three months about how corporate intranet works and then look deeper into particularly 3 parts of the intranet that I had a hardship in understanding initially. Hopefully in learning them and writing them here I can provide some helps to those who have the same kind of difficulties as me.
+        </p>
+
+        <h2>VPN</h2>
+        <p>
+            VPN is for sure the most commonly used network technology now, but its use is very versatile. In essence, it connects one machine to a remote network, as if the machine is phisically connected to that network.
+        </p>
+        <p>
+            Let's first look at the most common use of a VPN in modern days - to achieve <b>anonymity</b> when accessing internet resources. When a VPN client is initializing, it establishes a secure connection to the remote VPN server, be it a public commercial server or a private organization server. Most likely users will have to authenticate to be connected. Then once the connection is established, user access to any internet resources will be routed to the VPN server first, before the server accesses that resource and sends back the response through the secure link.
+        </p>
+        <div class='img-txt'>
+            <img src='../imgs/Box-2.png'>
+            <h3>VPN Dataflow</h3>
+        </div>
+        <p>
+            As the image shows, the VPN server is the middleman in this case. The public internet can only see a request from the VPN server has been made, but not who initiates that request, effectively hiding the user's identity.
+        </p>
+        <br>
+        <br class='dots'>
+        <br>
+
+        <p>
+            To be honest, I'm simplifying things greatly here. The connection established between a host and the VPN server isn't just any simple connection we often see when using the internet. The connection effectively creates a virtual counterpart of the current host in the VPN server's network, with its own private local ip inside the network.
+        </p>
+        <div class='img-txt'>
+            <img src='../imgs/Box-3.png'>
+        </div>
+        <p>
+            Any user's network access from the actual host will be seen as if the access is generated from a local machine that is directly connected to the VPN server's network, when in fact the actual machine may be many thousands of miles away.
+        </p>
+
+        <br>
+        <p>
+            Now if VPN technology creates a virtual host inside the VPN server's network, doesn't that mean the actual host can access other resources in the same local network? Of course, it does. And this is a very important use case of VPN that people like me who had never worked within corporate intranet before did not understand right away.
+        </p>
+        <div class='img-txt'>
+            <img src='../imgs/Box-4.png'>
+        </div>
+        <p>
+            As an illustration, there may be devices and services that are within the local network, which are internal resources that cannot and should not be accessible from outside internet. Because they are internal, they can only be addressed by their local private ip addresses from a host also within the network. And VPN provides just that - a virtual local private ip inside the network, so that now the physical host can access those internal resources.
+            <h3>Answer 1: VPN</h3>
+        </p>
+
+        <h2>Firewall</h2>
+        <p>
+            For a local network to withinstand malicious attacks from outside, there must be security measures installed. Firewall is a very effective and straightforward way of doing this.
+        </p>
+        <p>
+            The idea of a firewall is quite simple. It intercepts untrusted/dangerous packets and stops them from entering or exiting based on some predefined rules. As an example, it may not be desirable for internal network hosts to access webpages through HTTP/HTTPS protocols as it could be a security issue (for an example of this, see <a href='XSS Attack.html'>previous post</a>). So, it could be the case that the network administrator configure the firewall to intercept all HTTP/HTTPS traffic passing through it, effectively disabling browsing the internet.
+        </p>
+        <p>
+            A firewall can be at individual host level or at the network level. They are the same kind of firewall only to protect different things. Host firewall protects the host from malicious attacks from outside through open ports. Network firewall is often a standalone service that protects the internal network from attacks on both sides by carefully inspecting incoming and outgoing traffic.
+        </p>
+        <p>
+            For Linux hosts, there are programs/services like <icode>iptables</icode> and <icode>firewalld</icode> that can configure the host firewall. Firewall rules need to be provided and are used to determine when to let packets go through.
+        </p>
+        <p>
+            Firewall can protect internal network, but it's also very strict. In the case that a firewall is installed on a local network and an outside host connects to that network through VPN, that host may not be able to search google or even upload code to github repo should internet access be restricted by the firewall.
+        </p>
+        <p>
+            A workaround is needed, and that is what's coming next - a proxy.
+            <h3>Answer 2: Firewall</h3>
+        </p>
+        <div class='img-txt'>
+            <img src='../imgs/Box-5.png'>
+        </div>
+
+        <h2>Proxy</h2>
+        <p>
+            A proxy, as its name suggests, is used to perform some actions on someone's behalf. A poroxy server, in this sense, is nothing more than a server that accesses internet resources for the user and sends the response back. In some way, it is quite similar to how VPN works in the first use case: user redirects a request to the proxy server, the proxy server acts on it, and sends back the result.
+        </p>
+        <p>
+            The major difference is that proxy servers are very limited in power compared to VPN, and it functions mostly at the application level. A host using VPN is fully connected to the remote local network, thus all network traffic of the host must pass the hand of the VPN server. However, a proxy server is just a relay station, and it doesn't connect the host to its network. It just receives messages sent from a user and act upon them.
+        </p>
+        <p>
+            Sometimes different proxy servers are responsible for different kinds of network traffics only. There can be one proxy server dedicated for dealing with HTTP/HTTPS protocol messages, and another dedicated for dealing with SMTP protocal messages.
+        </p>
+        <p>
+            With the power of proxy servers, we can now address the issue before. Although network access may be restricted by the network firewall, a host can still go around the restriction by connecting to a proxy server.
+        </p>
+        <a href='../imgs/Box-6.png'><img src='../imgs/Box-6.png'></a>
+        <p>
+            Here I draw the proxy server outside the internal network box. It should also be valid to put the proxy server inside the internal network but attached to a different firewall with less stringent rules.
+            <h3>Answer 3: Proxy</h3>
+        </p>
+
+        <h2>Practical Tips</h2>
+        <p>
+            Here are tips/solutions for some common issues one may encounter when working in an internal network environment similar to the one I described above:
+        </p>
+
+        <br>
+        <ul style='list-style:none;'>
+            <li>
+                1. To access internet resources when connected to a local network using VPN, set the proxy server by setting the <icode>HTTP_PROXY</icode> and <icode>HTTPS_PROXY</icode> (both upper and lower cases) environment variables. To persist the proxy settings across reboots, set them in either <icode>.bashrc</icode> (user-specific) or <icode>/etc/environment</icode> (machine-wide).
+            </li>
+            <br>
+            <li>
+                2. Some programs, like <icode>kubectl</icode>, will attempt to access all ip addresses, <b>including</b> local ip addresses like 10.0.0.0 & 196.168.0.0 through the proxy on the internet. Prevent them from doing this by setting the <icode>NO_PROXY</icode> (both upper and lower cases) environment variable on Linux.
+            </li>
+            <br>
+            <li>
+                3. To be able to <icode>ssh</icode> into outside VMs that are blocked by firewall, configure SSH to use proxy following <a href='https://stackoverflow.com/questions/5103083/ssh-in-git-behind-proxy-on-windows-7' style='color:#636363;text-decoration:underline;'>this guide</a>. If the proxy server is an http server, then after the setup in <icode>~/.ssh/config</icode>, SSH will run on top of HTTPS protocol and subject to its restrictions (ie. session timeout, etc). An example of config that worked for me to run SSH over HTTPS proxy server on Windows using git bash:<br>
+                <ul class='ccode'>
+                    <li><pre>Host [name of vm]</pre></li>
+                    <li><pre>  HostName [ip address]</pre></li>
+                    <li><pre>  User [vm user]</pre></li>
+                    <li><pre>  Port 22</pre></li>
+                    <li><pre>  IdentityFile [RSA key]</pre></li>
+                    <li><pre>  TCPKeepAlive yes</pre></li>
+                    <li><pre>  IdentitiesOnly yes</pre></li>
+                    <li><pre>  ProxyCommand /bin/connect.exe -H [proxy address]:[port] %h %p</pre></li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>Concolusion</h2>
+        <p>
+            Hope I've provided some useful information here about how some common corporate intranet infrastructures work. Understanding them would have definitely saved me some time during my internship. But it's never too late to learn right?
+        </p>
+        
+        <h3>Useful Links/References:</h3>
+        <p>
+            <a href='https://en.wikipedia.org/wiki/OSI_mode'>OSI Model Wiki</a><br>
+            <a href='https://en.wikipedia.org/wiki/Proxy_server'>Proxy Server Wiki</a><br>
+            <a href='https://opensource.com/article/18/9/linux-iptables-firewalld'>Linux iptables & firewalld</a><br>
+            <a href='https://www.serverlab.ca/tutorials/linux/administration-linux/how-to-configure-proxy-on-ubuntu-18-04/'>Linux setup proxy</a><br>
+            <a href='https://stackoverflow.com/questions/5103083/ssh-in-git-behind-proxy-on-windows-7'>SSH with proxy on windows</a><br>
+        </p>
+    </div>
+</div>

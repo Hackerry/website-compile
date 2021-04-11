@@ -1,0 +1,49 @@
+<div id='content-root'>
+    <div id='banner'>
+        <h1 id='banner-title'>Welcome!</h1>
+        <p class='banner-description'>
+            Computer science major undergrduate and incoming graguate student at <b>UC San Diego</b>. Passionate about learning all things computer-related. Worked at <b>Oracle</b> as a corporate architecture intern in summer <b>2020</b>.
+        </p>
+        <p class='banner-description'>
+            I'm also a...
+        </p>
+        <ul id='banner-list'>
+            <li>
+                <span class='icon'><i class="fas fa-music"></i></span>beginning piano player (6 months)
+            </li>
+            <li>
+                <span class='icon'><i class="fas fa-gamepad"></i></span>mid-core gamer (mostly Minecraft)
+            </li>
+            <li>
+                <span class='icon'><i class="fas fa-atom"></i></span>former chemistry major (2 yrs)
+            </li>
+        </ul>
+        <p class='banner-description'>
+            and my focuses are operating systems, computer networks, web development and computer security.
+        </p>
+        <p id='resume-link'>
+            <a href='Resume_Jiachen_Niu.pdf'>Resume (updated Apr. 2021)</a>
+        </p>
+        <div id='banner-icon'></div>
+    </div>
+
+    <div id='intro-div'>
+        <div id='project-div'>
+            <h1>Projects</h1>
+            {{range .Projects}} {{template "cardDiv" .}} {{end}}
+            <a href='https://github.com/Hackerry' id='project-link'>More on Github<span class="icon"><i class="fas fa-chevron-right"></i></span></a>
+        </div>
+        <div id='tools-div'>
+            <h1>Tools</h1>
+            {{range .Tools}} {{template "cardDiv" .}} {{end}}
+        </div>
+    </div>
+
+    <div id='blog-div'>
+        <h1>Recent Blogs</h1>
+        <div id='blog-cards'>
+            {{range .Posts}} {{template "cardDiv" .}} {{end}}
+        </div>
+        <a href='/blog/index.html' id='blog-link'>Read More<span class="icon"><i class="fas fa-chevron-right"></i></span></a>
+    </div>
+</div>

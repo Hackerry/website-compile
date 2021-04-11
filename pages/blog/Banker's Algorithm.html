@@ -1,0 +1,127 @@
+<!-- Today I want to talk about the Banker's algorithm - a deadlock-avoidance algorithm for allocating system resources. It's the work of Edsger W. Dijkstra -->
+<!-- study-notes -->
+<div id='content-wrapper'>
+    <div id='content'>
+        <h1>Banker's Algorithm and some thoughts</h1>
+        <p id='content-date'>May. 28, 2020, 23:42:58</p>
+        <p>
+            Hi, there! Today I want to talk about the Banker's algorithm - a deadlock-avoidance algorithm for allocating system resources.
+        </p>
+
+        <h2>Introduction</h2>
+        <p>
+            It's the work of <a href='https://en.wikipedia.org/wiki/Edsger_W._Dijkstra#Algorithmic_work'>Edsger W. Dijkstra</a>, who, as you may guessed it, is the inventor of the well-known Dijkstra's Algorithm.
+        </p>
+
+        <h2>Assumptions</h2>
+        <p>
+            The Banker's Algorithm starts with several assumptions:<br>
+            <ol>
+                <li>All resource allocation for a job is determined beforehand</li>
+                <li>The number of jobs is static</li>
+                <li>Each job will eventually release all its resources on completion</li>
+            </ol>
+        </p>
+
+        <h2>Example</h2>
+        <p>
+            With those assumptions in mind, let's inspect how the algorithm works. Assume we have 3 types of resources, A, B and C, or Workers, Trucks and Cranes to make it fun. We also have different kinds of construction jobs that need to be done:<br>
+            <table>
+                <thead><td>Job Name</td><td>Workers Required</td><td>Trucks Required</td><td>Cranes Required</td></thead>
+                <tr><td>Parking Lot</td><td>8</td><td>4</td><td>2</td></tr>
+                <tr><td>Wooden House</td><td>4</td><td>1</td><td>0</td></tr>
+                <tr><td>Radio Tower</td><td>5</td><td>2</td><td>3</td></tr>
+                <tr><td>Garage Door</td><td>1</td><td>0</td><td>1</td></tr>
+                <tr><td>Town Hall</td><td>10</td><td>8</td><td>5</td></tr>
+                <tr><td colspan="4">Table 1</td></tr>
+            </table>
+        </p>
+
+        <p>
+            Since we are in a small construction company, we only have 9 workers, 5 trucks and 3 cranes. Therefore, we need to make a careful decision on what jobs to take and in what order, so that we can get as many jobs done as possible. To make things more complicated, our vice manager has already assigned some of our teams to work on certain jobs without notifing us:<br>
+            <table>
+                <thead><td>Job Name</td><td>Workers Dispatched</td><td>Trucks Dispatched</td><td>Cranes Dispatched</td></thead>
+                <tr><td>Parking Lot</td><td>2</td><td>2</td><td>0</td></tr>
+                <tr><td>Wooden House</td><td>3</td><td>0</td><td>0</td></tr>
+                <tr><td>Garage Door</td><td>0</td><td>0</td><td>1</td></tr>
+                <tr><td colspan="4">Table 2</td></tr>
+            </table>
+        </p>
+
+        <p>
+            Now the decision falls on us to make a plan to get as much jobs done as possible. Note that unless we have all the required resources for a job, workers can't start working on it. To come up with a plan, we follow the algorithm and first look through the list of jobs and look for "missions impossible". In this specific case, we find that the Town Hall job is impossible because we don't have 8 trucks altogether. Therefore, we cross it out.
+        </p>
+
+        <p>
+            Then for the rest jobs, we construct a <b>Need</b> table for each process that lists how many more resources each job needs (remember we've already assigned some resources): <br>
+            <table>
+                <thead><td>Job Name</td><td>Workers Need</td><td>Trucks Need</td><td>Cranes Need</td></thead>
+                <tr><td>Parking Lot</td><td>6</td><td>2</td><td>2</td></tr>
+                <tr><td>Wooden House</td><td>1</td><td>1</td><td>0</td></tr>
+                <tr><td>Radio Tower</td><td>5</td><td>2</td><td>3</td></tr>
+                <tr><td>Garage Door</td><td>1</td><td>0</td><td>0</td></tr>
+                <tr><td colspan="4">Table 3</td></tr>
+            </table>
+            Also note that we have 4 workers, 3 trucks and 2 cranes <b>Available</b> to be assigned.
+        </p>
+
+        <p>
+            For the next step, we look through each job and decide whether the available resources right now are enough to finish that job. If we do, then we assign the demanded amount of resources to that job. And after it finishes, all allocated resources will be reclaimed and can be used for the next job.
+        </p>
+        <p>
+            However, if we don't have enough resources right now for a certain job, we move on to test the next one in the hope that we can reclaim more resources down the line. If we test all jobs and can't finish any of them with the resources avaliable, we are sure that's all we can do without forcing some jobs relinquish their currently assigned resources.
+        </p>
+        <br>
+        <br class='dots'>
+        <br>
+
+        <p>
+            Move back to the construction company example, we first test the Parking Lot job and discover that we don't have enough workers for it. Therefore, we go on to the Wooden House job.
+        </p>
+        <p>
+            Now we have enough wokers and trucks to get the job done. We allocate those resources to it and after it finishes, we get back both the previously assigned resources (allocated by our vice manager) and the resources allocated by us. Mathematically, we just add the previously allocated resources (3 workers) back to our avaliable resource list.
+        </p>
+        <p>
+            We have 7 workers, 3 trucks and 2 cranes at out hand for the next Radio Tower job, which is insufficient, so we move on to the next job.
+        </p>
+        <p>
+            We can finish the Garage Door job and reclaim one crane. Now with 7 workers, 3 trucks and 3 cranes, we can finish the Parking Lot job and get back 2 workers and 2 trucks. Then with full resources back, we can definitely finish the Radio Tower job.
+        </p>
+
+        <p>
+            So, the overall working order is: Wooden House -> Garage Door -> Parking Lot -> Radio Tower with avaliable resources changes: (4,3,2) -> (7,3,2) -> (7,3,3) -> (9,5,3) -> (9,5,3). We managed to complete all jobs and everyone gets paid. :)
+        </p>
+
+        <p>
+            Luckily, we were in a <b>"safe state"</b> (after our vice manager's presumptuous assignment). We were able to finish all possible jobs without running into a deadlock. The above working sequence is also called a <b>"safe sequence"</b>. However, if our manager assigned 4 more workers to the impossible Town Hall job, we'll not be able to get any jobs done (we have no workers left), thus ending in an <b>"unsafe state"</b> and thus deadlock.
+        </p>
+
+        <h2>In Practice</h2>
+        <p>
+            In the actual OS scheduling, the process is quite similar. Each time when a new process requests resources, this algorithm will first check whether it is an "impossible job" and deny the request if the process requires too much resources. Then for those possible jobs, the algorithm will assume the job has been accepted and try to find a safe sequence with the current allocation status of each process. If such sequence can be found, the job is accepted. Otherwise, the OS will be in an "unsafe state" should it take the job, so this request must be delayed or denied accordingly.
+        </p>
+
+        <h2>Some Thoughts</h2>
+        <p>
+            I find this algorithm quite elegant. It solves a specific kind of decision problem, whether certain resources should be allocated to a process, in a systematic and intuitive way. Although the assumptions are not that practical and renders some limitations on the algorithm, but they help reduce the problem to a smaller and easier-to-bite size. Then it's just a matter of stripping out layers of assumptions and come up with ways to deal with each of them individually to get to a complete implementation-level solution.
+        </p>
+        <p>
+            This kind of approach reminds me of another decision problem - the <a href='https://en.wikipedia.org/wiki/Travelling_salesman_problem'>TSP problem</a> that I'm really interested in. People have tried to approach TSP from different variations of the problem, essentially tweaking assumptions and trying to solve a smaller set of the problem to gain some insights to the original one. I also like to use other decision problems as analogies to try to analyze TSP and explore a little bit, doing some comparisons.
+        </p>
+        <p>
+            If we assume each job is a node in a graph, then finding a cycle that visits every node exactly once in TSP is very similar to finding the "safe sequence" that gets each job done (exactly once) in the Banker's Algorithm. However, the weight between two nodes is ill-defined in terms of jobs and resources. Therefore, the whole shortest path critiria in TSP has no meaning here.
+        <p>
+            One thing that makes TSP so hard is that each decision has an effect on subsequent choices (either positive or negative, we don't know), thus the factorial growth runtime in the brute-force algorithm. In Banker's algorithm, however, let one job finish before another definitely has no negative effect on subsequent choices because at least the same amount of resources, if not more, is available for the next job. So, Banker's Algorithm is drastically different from TSP in nature.
+        </p>
+        <p>
+            Sorry if I'm rambling nonsense and saying such an obvious thing - the two problems (TSP & scheduling) are quite different. It's just fun to think out side of the box and apply things learned at weird places. Maybe sometime there will be sparkles. Who knows?
+
+        </p>
+
+        <h3>Useful Links/References:</h3>
+        <p>
+            <a href='https://en.wikipedia.org/wiki/Banker%27s_algorithm'>Banker's Algorithm - Wikipedia</a><br>
+            <a href='https://en.wikipedia.org/wiki/Edsger_W._Dijkstra#Algorithmic_work'>Edsger W. Dijkstra - Wikipedia</a>
+        </p>
+    </div>
+</div>

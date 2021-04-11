@@ -1,0 +1,772 @@
+<!-- A few months ago, I was watching ilmango's video on how to build a TNT tree farm in Minecraft 1.15/1.16 (ilmango is a technical Minecrafter who makes great redstone builds and tutorials). -->
+<!-- study-notes -->
+<style>
+    #redstone-button {
+        display:inline-block;
+        padding-left: 5px;
+    }
+    #restone-button-root {
+        position:relative;
+    }
+    #restone-button-root:hover {
+        cursor:pointer;
+    }
+    #proof-button {
+        display:inline-block;
+        padding-left: 5px;
+    }
+    #proof-button-root {
+        position:relative;
+    }
+    #proof-button-root:hover {
+        cursor:pointer;
+    }
+    .sprite {
+        background: url(../imgs/Redstone_sprite.png) no-repeat;
+        margin: 0 2px 0 5px;
+    }
+    .lsprite {
+        background: url(../imgs/Redstone_sprite.png) no-repeat;
+        background-size: 192px auto;
+    }
+    .redstone-block {
+        width: 16px;
+        height: 16px;
+        display: inline-block;
+        background-position: 0px 0px;
+    }
+    .lredstone-block {
+        width: 32px;
+        height: 32px;
+        display: inline-block;
+        background-position: 0px 0px;
+    }
+    .piston-block {
+        width: 16px;
+        height: 16px;
+        display: inline-block;
+        background-position: -48px -16px;
+    }
+    .lpiston-up {
+        width: 32px;
+        height: 32px;
+        display: inline-block;
+        background-position: -32px 0px;
+    }
+    .lpiston-head {
+        width: 32px;
+        height: 32px;
+        display: inline-block;
+        background-position: -128px -32px;
+    }
+    .lpiston-base {
+        width: 32px;
+        height: 32px;
+        display: inline-block;
+        background-position: -160px -32px;
+
+    }
+    .sticky-piston-block {
+        width: 16px;
+        height: 16px;
+        display: inline-block;
+        background-position: -32px -16px;
+    }
+    .redstone-dust {
+        width: 16px;
+        height: 16px;
+        display: inline-block;
+        background-position: -16px -16px;
+    }
+    .lredstone-top-corner {
+        width: 32px;
+        height: 32px;
+        display: inline-block;
+        background-position: -128px 0px;
+    }
+    .lredstone-straight {
+        width: 32px;
+        height: 32px;
+        display: inline-block;
+        background-position: -160px 0px;
+    }
+    .lredstone-bot-corner {
+        width: 32px;
+        height: 32px;
+        display: inline-block;
+        background-position: -96px 0px;
+    }
+    .slime-block {
+        width: 16px;
+        height: 16px;
+        display: inline-block;
+        background-position: 0px -16px;
+    }
+    .lslime-block {
+        width: 32px;
+        height: 32px;
+        display: inline-block;
+        background-position: 0px -32px;
+    }
+    .obsidian-block {
+        width: 16px;
+        height: 16px;
+        display: inline-block;
+        background-position: -32px 0px; 
+    }
+    .lobsidian-block {
+        width: 32px;
+        height: 32px;
+        display: inline-block;
+        background-position: -64px 0px;
+    }
+
+    #slide-root {
+        width: 100%;
+        position: relative;
+    }
+    .prev, .next {
+        cursor: pointer;
+        position: absolute;
+        top: 50%;
+        padding: 16px;
+        margin-top: -22px;
+        color: white;
+        font-weight: bold;
+        font-size: 1em;
+        border-radius: 0 3px 3px 0;
+    }
+    .next {
+        right: 0;
+        border-radius: 3px 0 0 3px;
+    }
+    .prev:hover, .next:hover {
+        background-color: rgba(0,0,0,0.8);
+    }
+    .myslide {
+        display:none;
+        width: 100%;
+    }
+</style>
+
+<!-- HTML 5 allow style in body -->
+<div id='content-wrapper'>
+    <div id='content'>
+        <h1>Weird Piston Behavior Explained</h1>
+        <p id='content-date'>Dec. 6, 2020, 22:21:43</p>
+        <p>
+            A few months ago, I was watching <a href='https://www.youtube.com/watch?v=Kw3kgq19nrU'>ilmango's video</a> on how to build a TNT tree farm in Minecraft 1.15/1.16 (<i>ilmango is a technical Minecrafter who makes great redstone builds and tutorials</i>).
+        </p>
+        <p>
+            I discovered a piston trick he used in the video which I had never seen before. It contradicted with my previous understandings of how pistons work, so I immediately set out to learn why this trick was ever possible...
+        </p>
+        <p>
+            Now I think I finally have an answer.
+        </p>
+
+        <h2>Minecraft Redstone Crash Course</h2>
+        <p>If you have played Minecraft before or have some basic knowledge of Minecraft redstone, you are free to skip this section.</p>
+        <div id='restone-button-root'>
+            <i id='redstone-icon' class="far fa-plus-square"></i><h3 id='redstone-button'>Expand</h3>
+        </div>
+        <div id='redstone-section' style='display:none;'>
+            <video src='../videos/Redstone_Crash_Crouse.mp4' width='100%' controls preload></video>
+            <br><br>
+            <h3>Basic Redstone Components</h3>
+            <p>
+                Redstone components are like eletric components and allow you to create circuits or contraptions with them.
+            </p>
+            <p>
+                <span class='sprite redstone-block'></span><b>Redstone Block:</b> A power source, like a battery.<br>
+                <span class='sprite piston-block'></span><b>Normal Piston:</b> A piston that can push blocks in front of it when powered.<br>
+                <span class='sprite sticky-piston-block'></span><b>Sticky Piston:</b> A piston that can push (when powered) and pull (when depowered) blocks in front of it.<br>
+                <span class='sprite redstone-dust'></span><b>Redstone Dust:</b> Can transmit power, like a wire.<br>
+                <span class='sprite slime-block'></span><b>Slime Block:</b> A special block that can stick to each other and any other blocks that are adjacent to it. When moved by a piston, all blocks sticked to it will be moved as well.<br>
+                <span class='sprite obsidian-block'></span><b>Obsidian Block:</b> A special block that when placed in the path of pistons moving, will stop pistons from moving. Same applies to blocks attached by slime blocks.
+            </p>
+            <p>
+                We see 4 redstone contraptions in the video.
+            </p>
+            <br class='dots'>
+            <p>
+                The first is a demonstration of the basic movements of a normal piston and a sticky piston.
+            </p>
+            <p>
+                When a redstone block<span class='sprite redstone-block'></span> is adjacent to either piston, the piston will fire and push the block in front of it.<br>
+                When depowered, normal piston<span class='sprite piston-block'></span> will leave the block behind and retract, while sticky piston<span class='sprite sticky-piston-block'></span> will also pull back the block in front of it.
+            </p>
+            <br class='dots'>
+            <p>
+                The second example shows redstone block<span class='sprite redstone-block'></span> can power piston through redstone dust<span class='sprite redstone-dust'></span>, which transmits power into the piston.
+            </p>
+            <br class='dots'>
+            <p>
+                Finally we have a contraption that uses everything we talked about.
+            </p>
+            <p>
+                When powered by a redstone block<span class='sprite redstone-block'></span> through redstone dust<span class='sprite redstone-dust'></span>, the sticky piston<span class='sprite sticky-piston-block'></span> moves and pushes the slime block<span class='sprite slime-block'></span> directly in front of it.
+            </p>
+            <p>
+                Since there are other slime block<span class='sprite slime-block'></span> adjacent to the pushed block, they moves as well.
+            </p>
+            <p>
+                The white concret blocks, and the redstone block<span class='sprite redstone-block'></span> later being added, are attached to at least one slime block<span class='sprite slime-block'></span>, so they also moves with the slime block<span class='sprite slime-block'></span> chunks.
+            </p>
+            <p>
+                However, when an obsidian block<span class='sprite obsidian-block'></span> is added on top of the slime blocks, the sticky piston doesn't fire even when powered. Similarly, when an obsidian block<span class='sprite obsidian-block'></span> is in the way of blocks retracting, the piston failed to pull those slime blocks back.
+            </p>
+            <br class='dots'>
+            <p>
+                These are the most basic uses of these redstone components. They should be enough for our discussion.
+            </p>
+        </div>
+
+        <h2>Exercise - How will it move?</h2>
+        <p>
+            Now as an exercise, let's analyze one contraption that uses some of the blocks I introduced earlier. (If you can't understand some parts of the explaination, please check the previous section)
+        </p>
+        <p>
+            We have a contraption as such:
+            <div style='text-align: center;'>
+                <table style='display:inline-block;border-collapse: collapse;width:0;';>
+                    <tr><td><span class='lsprite lslime-block'></span></td><td><span class='lsprite lslime-block'></span></td></tr>
+                    <tr><td><span class='lsprite lpiston-up'></span></td><td><span class='lsprite lredstone-block'></span></td></tr>
+                </table>
+            </div>
+            (Note: The piston is a sticky piston)
+        </p>
+        <p>
+            How will it move once being constructed?
+        </p>
+        <br class='dots'>
+        <br>
+        <p>
+            First we notice there is a redstone block next to a piston, so reasonablly that piston will fire and push the slime blocks in front of it.
+        </p>
+        <p>
+            Since the restone block is attached to one of the slime blocks, they all will be pushed by the piston like so:
+            <div style='text-align: center;'>
+                <table style='display:inline-block;border-collapse: collapse;width:0;';>
+                    <tr><td><span class='lsprite lslime-block'></span></td><td><span class='lsprite lslime-block'></span></td></tr>
+                    <tr><td><span class='lsprite lpiston-head'></span></td><td><span class='lsprite lredstone-block'></span></td></tr>
+                    <tr><td><span class='lsprite lpiston-base'></span></td><td></td></tr>
+                </table>
+            </div>
+        </p>
+
+        <p>
+            However, once the whole contraption is in this state, the piston is no longer powered by the redstone block (not attached to it).
+        </p>
+        <p>
+            So, the piston will retract and pull the 3 blocks with it. And the whole contraption is back to the initial stage when it was first constructed.
+        </p>
+        <br>
+        <p>
+            Wait? Doesn't that mean the contraption is in an <b>infinite push-pull loop</b>?
+        </p>
+        <br>
+        <p>
+            You guessed right! That is exactly what will happen if you try it in game.
+        </p>
+        <p>
+            However, if we slightly modify the contraption by adding another slime block in front of it, then things change (see demo below).
+            <div style='text-align: center;'>
+                <table style='display:inline-block;border-collapse: collapse;width:0;';>
+                    <tr><td><span class='lsprite lslime-block'></span></td><td></td></tr>
+                    <tr><td><span class='lsprite lslime-block'></span></td><td><span class='lsprite lslime-block'></span></td></tr>
+                    <tr><td><span class='lsprite lpiston-up'></span></td><td><span class='lsprite lredstone-block'></span></td></tr>
+                </table>
+            </div>
+        </p>
+
+        <p>
+            <video src='../videos/Weird_Behavior.mp4' width='100%' controls preload></video>
+            <br><br>
+        </p>
+
+        <p>
+            Somehow the second contraption didn't go crazy as we saw in the first one despite having all the similarities. If we follow the same reasoning before, the second contraption is really weird and doesn't follow redstone rules.
+        </p>
+        <p>
+            In addition, those two contraptions will fall into infinite push-pull loops once constructed,
+        </p>
+        <p>
+            <div style='text-align: center;'>
+                <table style='display:inline-block;border-collapse: collapse;width:25%;';>
+                    <tr><td><span class='lsprite lredstone-block'></span></td></tr>
+                    <tr><td><span class='lsprite lslime-block'></span></td></tr>
+                    <tr><td><span class='lsprite lpiston-up'></span></td></tr>
+                </table>
+                <table style='display:inline-block;border-collapse: collapse;width:25%;';>
+                    <tr><td><span class='lsprite lslime-block'></span></td><td><span class='lsprite lredstone-block'></span></td><td><span class='lsprite lslime-block'></span></td></tr>
+                    <tr><td><span class='lsprite lslime-block'></span></td><td><span class='lsprite lslime-block'></span></td><td><span class='lsprite lslime-block'></span></td></tr>
+                    <tr><td></td><td><span class='lsprite lpiston-up'></span></td><td></td></tr>
+                </table>
+            </div>
+        </p>
+
+        <p>
+            but not those two.
+        </p>
+        <p>
+            <div style='text-align: center;'>
+                <table style='display:inline-block;border-collapse: collapse;width:25%;';>
+                    <tr><td><span class='lsprite lslime-block'></span></td><td><span class='lsprite lredstone-block'></span></td></tr>
+                    <tr><td><span class='lsprite lslime-block'></span></td><td></td></tr>
+                    <tr><td><span class='lsprite lpiston-up'></span></td><td></td></tr>
+                </table>
+                <table style='display:inline-block;border-collapse: collapse;width:25%;';>
+                    <tr><td><span class='lsprite lslime-block'></span></td><td><span class='lsprite lslime-block'></span></td><td><span class='lsprite lslime-block'></span></td></tr>
+                    <tr><td><span class='lsprite lslime-block'></span></td><td><span class='lsprite lredstone-block'></span></td><td><span class='lsprite lslime-block'></span></td></tr>
+                    <tr><td><span class='lsprite lslime-block'></span></td><td><span class='lsprite lslime-block'></span></td><td><span class='lsprite lslime-block'></span></td></tr>
+                    <tr><td></td><td><span class='lsprite lslime-block'></span></td><td></td></tr>
+                    <tr><td></td><td><span class='lsprite lpiston-up'></span></td><td></td><td></td></tr>
+                </table>
+            </div>
+        </p>
+
+        <h2>Why It's Worth Looking Into</h2>
+        <p>
+            As a programmer, I find this discrepancy between real piston behavior and theoretical behavior really interesting. Minecraft is a sandbox game/simulator where every perceivable phenomenon in the game should follow certain rules. Either those rules are in correspondence with real-world physics or not, in which case people often call them as following "Minecraft Physics", there is always a perfect explanation for why those rules work this way.
+        </p>
+        <p>
+            One contraption that strictly follows "Minecraft Physics" is a <a href='https://minecraft.gamepedia.com/Tutorials/Flying_machines'>"flying machine"</a> - a perpetual motion machine in Minecraft. Despite contradicting with real-world physics, its behavior is still predictable based on solely fundamental redstone knowledge.
+        </p>
+        <p>
+            However, the previous piston contraption we talked about is not following "Minecraft Physics" at all. It has an unpredictable behavior that cannot be reasoned about with only redstone knowledge.
+        </p>
+        <p>
+            Therefore, there must be something at the game code level, which we can't directly perceive in-game, that is causing this weird/unexpected behavior.
+        </p>
+        <p>
+            Having this initial thought in mind, after many hours of researching, experimenting, and thinking, I finally found a reasonable explanation for what could be causing this behavior.
+        </p>
+        <p>
+            But before moving on to the final solution, we need some background knowledge about piston mechanics that is most likely unfamiliar to regular Minecraft players like me.
+        </p>
+
+        <h2>Divergent 1: Block 36</h2>
+        <p>
+            Minecraft is a game about blocks. Everything from dirt to air to water and even players, are bounded by Minecraft's "blocky rules".
+        </p>
+        <p>
+            However, just having static blocks certainly isn't enough for Minecraft. It would be like living in a world of static images if there weren't any animation and motion that could bring things to life.
+        </p>
+        <p>
+            As we saw earlier in the demo, the movement of pistons was not just two static images of the initial and final state. We perceived a smooth transition of blocks being moved.
+        </p>
+        <p>
+            If I freeze the game and advance the game one tick at a time (using gnembon's carpet mod <a href='https://github.com/gnembon/fabric-carpet'>here</a>), we can see how the piston moves as the time progresses:<br>
+            <div id='slide-root'>
+                <div class='myslide'>
+                    <img src='../imgs/Piston-3.png' width=100%>
+                </div>
+                <div class='myslide'>
+                    <img src='../imgs/Piston-4.png' width=100%>
+                </div>
+                <div class='myslide'>
+                    <img src='../imgs/Piston-5.png' width=100%>
+                </div>
+                <div class='myslide'>
+                    <img src='../imgs/Piston-6.png' width=100%>
+                </div>
+                <a class="prev" onclick="plusSlide(-1)">&#10094;</a>
+                <a class="next" onclick="plusSlide(1)">&#10095;</a>
+            </div>
+        </p>
+        <p>
+            Just like how videos and flip-books animate things, Minecraft shows us a fast series of images of the piston moving at different stages which when combined we perceive as pistons moving continuously.
+        </p>
+
+        <p>
+            From a programmer's perspective, animation introduces some trouble. As the rest of the world are all static blocks, the game need a way to make an exception for those moving blocks to let them temporarily break Minecraft's "blocky rules" and move freely in space. Also, the game engine have to mark and track those moving blocks so they can be processed differently with respect to the rest of the world.
+        </p>
+        <p>
+            "Block 36" or <a href='https://minecraft.gamepedia.com/Piston#Moving_Piston'>"moving_piston" block</a>, as it is now called in game, is created just for such a purpose.
+        </p>
+        <br><br>
+        <br class='dots'>
+        <br><br>
+        <p>
+            "Block 36" is an invisible in-game block that is used to represent a regular block that is currently moving.
+        </p>
+        <p>
+            A "Block 36" contains 2 pieces of information. First, it records what block is currently moving. Second, it keeps track of how far the animation has progressed/how far the blocks have moved.
+        </p>
+        <p>
+            If it helps in anyway, just think of "Block 36" as a <b>transition block</b>.
+        </p>
+        <p>
+            It provides a visually smooth transition of one block moving from one place to another without affecting too much on the rest of the world. It's lifecycle looks like this:<br>
+            <img src='../imgs/Piston-7.png' style='display:block;margin:auto;max-width:100%;'>
+        </p>
+        <p>
+            One other property of "Block 36", which is the most important one in relation to our discussion, is that <span style='font-weight:bold;'>"Block 36" can STOP pistons from moving</span> just like an obsidian block<span class='sprite obsidian-block'></span> (see demo below).
+        </p>
+        <p>
+            <video src='../videos/Moving_Piston_Block.mp4' width='100%' controls preload></video>
+        </p>
+        <p>
+            Initially the piston was free to move and could push and pull blocks in front of it. Once an obsidian block<span class='sprite obsidian-block'></span> was placed on the path it is pushing, the piston can no longer move as it was obstructed by that obsidian block.
+        </p>
+        <p>
+            Then I ran the command <icode>/fill ~ ~-1 ~ ~ ~-1 ~ minecraft:moving_piston</icode> which changed the block under my feet to be a <icode>moving_piston</icode> block ("Block 36"). Since "Block 36" is invisible, you could see the block under my feet disappeared and I fell into the hole.
+        </p>
+        <p>
+            The pistons failed to move after being powered, which proved that "Block 36" can't be pushed and can prevent pistons from moving.
+        </p>
+
+        <h2>Divergent 2: Piston Pre-Moving Checks</h2>
+        <p>
+            As you might realize, there are some factors affecting a piston's normal operation. We've seen that obsidian blocks and "Block 36" can obstruct piston from moving.
+        </p>
+        <p>
+            A second factor is the number of blocks being moved. A piston (either sticky or not) has a push/pull limit of <b>12 blocks</b>. This means, the following contraption can not move even when powered:
+            <div style='text-align: center;'>
+                <table style='display:inline-block;border-collapse: collapse;width:25%;line-height:32px;color:firebrick;font-weight:bold;';>
+                    <tr><td><span class='lsprite lslime-block'>1</span></td><td></td><td></td><td><span class='lsprite lslime-block'>8</span></td></tr>
+                    <tr><td><span class='lsprite lslime-block'>2</span></td><td></td><td></td><td><span class='lsprite lslime-block'>9</span></td></tr>
+                    <tr><td><span class='lsprite lslime-block'>3</span></td><td><span class='lsprite lslime-block'>6</span></td><td><span class='lsprite lslime-block'>7</span></td><td><span class='lsprite lslime-block'>10</span></td></tr>
+                    <tr><td><span class='lsprite lslime-block'>4</span></td><td></td><td></td><td><span class='lsprite lslime-block'>11</span></td></tr>
+                    <tr><td><span class='lsprite lslime-block'>5</span></td><td></td><td></td><td><span class='lsprite lslime-block'>12</span></td></tr>
+                    <tr><td><span class='lsprite lpiston-up'></span></td><td></td><td></td><td><span class='lsprite lslime-block'>13</span></td></tr>
+                </table>
+            </div>
+        </p>
+
+        <p>
+            Considering these special cases, when a piston is powered and before it can move, there must be some code that is doing prechecks on<br>
+            <b>1) the number of blocks to be pushed</b><br>
+            <b>2) whether the piston is obstructed (can move or not)</b>
+        </p>
+        <p>
+            DFS/BFS-like graph searching algorithm is a natrual choice. Following this idea and after doing some experimentations, I propose the following implementation of the piston precheck sequence, written in pseduocode:
+            <ul class='ccode'>
+                <li><pre>block36Queue = []</pre></li>
+                <li><pre><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>precheck</span>(block):</pre></li>
+                <li><pre>    <span style='color:#2196f3'>if</span> block can be moved:</pre></li>
+                <li><pre>        ...</pre></li>
+                <li><pre>        <span style='color:#2196f3'>if</span> block == <span style='color:#d8721a'>"Slime Block"</span>:</pre></li>
+                <li><pre>            <span style='color:#9e9e9e'>// Check attached blocks</span></pre></li>
+                <li><pre><span style='color:#9e9e9e'></span>            loop through surrounding_blocks -&gt;<span style='color:#DAF7A6 '></span> surrounding_block:</pre></li>
+                <li><pre>                <span style='color:#ffeb3b'>precheck</span>(surronding_block)</pre></li>
+                <li><pre>        ...</pre></li>
+                <li><pre>        blocksToMove.<span style='color:#ffeb3b'>append</span>(block)</pre></li>
+                <li><pre>        <span style='color:#ffeb3b'>precheck</span>(block_in_front)</pre></li>
+                <li><pre>    <span style='color:#2196f3'>else</span> <span style='color:#2196f3'>if</span> block == <span style='color:#d8721a'>"Air"</span>:</pre></li>
+                <li><pre>        <span style='color:#2196f3'>return</span> <span style='color:#2196f3'>true</span></pre></li>
+                <li><pre>    <span style='color:#2196f3'>if</span> <span style='color:#ffeb3b'>len</span>(blocksToMove) &gt; <span style='color:#4caf50'>12</span>:</pre></li>
+                <li><pre>        canMove = <span style='color:#2196f3'>false</span></pre></li>
+                <li><pre>    <span style='color:#2196f3'>return</span> <span style='color:#2196f3'>false</span></pre></li>
+                <li><pre><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>piston_powered</span>():</pre></li>
+                <li><pre>    canMove = <span style='color:#ffeb3b'>precheck</span>(block_in_front_of_piston)</pre></li>
+                <li><pre>    <span style='color:#2196f3'>if</span> canMove:</pre></li>
+                <li><pre>        <span style='color:#2196f3'>while</span> blocksToMove <span style='color:#2196f3'>not</span> Empty:</pre></li>
+                <li><pre>            moveBlock = <span style='color:#ffeb3b'>pop</span>(blocksToMove)</pre></li>
+                <li><pre>            moveBlock.<span style='color:#ffeb3b'>Move_Forward</span>()</pre></li>
+                <li><pre>            block36 = moveBlock.<span style='color:#ffeb3b'>createBlock36</span>(moveBlock)</pre></li>
+                <li><pre>            block36Queue.<span style='color:#ffeb3b'>append</span>(block36)</pre></li>
+                <li><pre>    <span style='color:#2196f3'>else</span>:</pre></li>
+                <li><pre>        <span style='color:#9e9e9e'>// Do nothing, piston can't move</span></pre></li>
+                <li><pre><span style='color:#9e9e9e'></span></pre></li>
+            </ul>
+        </p>
+        <p>
+            This code uses a standard DFS searching algorithm as backbone. It is checking whether piston can move based on the <icode>canMove</icode> flag. At the end of the execution, <icode>block36Queue</icode> stores all the currently moving "Block 36".
+        </p>
+        <p>
+            When a piston is powered, these two functions will be triggered. All connected blocks are checked and until no more exists (ie. an air block indicates nothing).
+        </p>
+        <p>
+            As an illustration, the blocks will be converted to "Block 36" and stored into <icode>block36Queue</icode> in the following order:
+            <div style='text-align: center;'>
+                <table style='display:inline-block;border-collapse:collapse;width:25%;line-height:32px;color:firebrick;font-weight:bold;';>
+                    <tr><td></td><td></td><td><span class='lsprite lslime-block'>8</span></td><td><span class='lsprite lslime-block'>9</span></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td><span class='lsprite lslime-block'>10</span></td><td></td></tr>
+                    <tr><td></td><td></td><td><span class='lsprite lslime-block'>12</span></td><td><span class='lsprite lslime-block'>11</span></td><td></td></tr>
+                    <tr><td><span class='lsprite lslime-block'>5</span></td><td><span class='lsprite lslime-block'>6</span></td><td><span class='lsprite lslime-block'>7</span></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td><span class='lsprite lslime-block'>4</span></td><td><span class='lsprite lslime-block'>3</span></td><td><span class='lsprite lslime-block'>2</span></td></tr>
+                    <tr><td></td><td></td><td><span class='lsprite lslime-block'>1</span></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td><span class='lsprite lpiston-up'></span></td><td></td><td></td></tr>
+                </table>
+            </div>
+        </p>
+        <p>
+            <icode>surrounding_blocks</icode> are the blocks that are not in the direction of moving (marked in yellow), while <icode>block_in_front</icode> is the block that is in the direction of moving with respect to any block (marked in red).
+            <div style='text-align: center;'>
+                <table style='display:inline-block;border-collapse:collapse;width:25%;line-height:32px;color:firebrick;font-weight:bold;';>
+                    <tr><td><span class='lsprite lslime-block' style='border:2px solid yellow;box-sizing:border-box;'>4</span></td><td><span class='lsprite lslime-block' style='border:2px solid yellow;box-sizing:border-box;'>5</span></td><td><span class='lsprite lslime-block' style='border:2px solid red;box-sizing:border-box;'>6</span></td><td><span class='lsprite lslime-block' style='border:2px solid yellow;box-sizing:border-box;'>2</span></td></tr>
+                    <tr><td><span class='lsprite lslime-block' style='border:2px solid yellow;box-sizing:border-box;'>3</span></td><td></td><td><span class='lsprite lslime-block' style='border:2px solid red;box-sizing:border-box;'>1</span></td><td></td></tr>
+                    <tr><td></td><td></td><td><span class='lsprite lpiston-up'></span></td><td></td></tr>
+                </table>
+            </div>
+            Note: the relative order of searching left or right first is arbitrary.
+        </p>
+
+        <h2>Final Result</h2>
+        <p>
+            Now with everything in place, we are ready to talk about why piston has those weird behaviors. Let's take the a very simple contraption first. As a reminder, this contraption falls into an infinite push-pull loop.
+        </p>
+        <p>
+            <div style='text-align:center;'>
+                <table style='border-collapse:collapse;display:inline-block;width:20%;';>
+                    <tr><td><span class='lsprite lredstone-top-corner'></span></td><td><span class='lsprite lredstone-block'></span></td></tr>
+                    <tr><td><span class='lsprite lredstone-straight'></span></td><td><span class='lsprite lslime-block'></span></td></tr>
+                    <tr><td><span class='lsprite lredstone-bot-corner'></span></td><td><span class='lsprite lpiston-up'></span></td></tr>
+                </table>
+            </div>
+        </p>
+        <p>
+            Now the magic happens in the pull sequence, after the piston has fired and pushed the 2 blocks:
+        </p>
+        <p>
+            <div style='text-align:center;'>
+                <table style='border-collapse:collapse;display:inline-block;width:20%;';>
+                    <tr><td></td><td><span class='lsprite lredstone-block' style='color:yellow;font-weight:bold;line-height:32px;'>2</span></td></tr>
+                    <tr><td><span class='lsprite lredstone-top-corner'></span></td><td><span class='lsprite lslime-block' style='color:firebrick;font-weight:bold;line-height:32px;'>1</span></td></tr>
+                    <tr><td><span class='lsprite lredstone-straight'></span></td><td><span class='lsprite lpiston-head'></span></td></tr>
+                    <tr><td><span class='lsprite lredstone-bot-corner'></span></td><td><span class='lsprite lpiston-base'></span></td></tr>
+                </table>
+            </div>
+        </p>
+        <p>
+            At this instant, the piston will retract next and triggeres the <icode>precheck</icode> function in the previous pseduocode. Two "Block 36" are consequently constructed and added to the <icode>block36Queue</icode> in the order marked in image.
+        </p>
+        <p>
+            In other words, <icode>block36Queue = [slime block#1, redstone block#2]</icode>.
+        </p>
+        <p>
+            Then as the piston retract and after the two "Block 36" have reached their final destination, two things will immediately happen:<br>
+        </p>
+        <p>
+            1). <u>"Block 36" will be destroyed in the order they are stored</u><br>
+            2). <u>Original blocks will be placed in the world and their events will be processed (ie. redstone becomes visible and starts powering pistons)</u>
+        </p>
+        <p>
+            If written in pseduocode:
+            <ul class='ccode'>
+                <li><pre><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>piston_stop_moving</span>():</pre></li>
+                <li><pre>loop through block36Queue -&gt;<span style='color:#DAF7A6 '></span> block36:</pre></li>
+                <li><pre>    block = block36.<span style='color:#ffeb3b'>getStoredBlock</span>()</pre></li>
+                <li><pre>    block36.<span style='color:#ffeb3b'>destroy</span>()</pre></li>
+                <li><pre>    <span style='color:#ffeb3b'>processEvent</span>(block)</pre></li>
+                </ul>
+        </p>
+
+        <p>
+            So the following steps will be taken next:
+            <ol>
+                <li>
+                    <icode>block36Queue = [<b>slime block#1</b>, redstone block#2]</icode><br>
+                    "Block 36" of slime block#1 is destroyed, slime block#1 is placed in the world as regular block.
+                </li>
+                <li>
+                    <icode>processEvent(slime block#1)</icode><br>
+                    Slime block#1 doesn't affect much on the rest of the world, so this function eventually returns.
+                </li>
+                <li>
+                    <icode>block36Queue = [slime block#1, <b>redstone block#2</b>]</icode><br>
+                    "Block 36" of redstone block#2 is destroyed, redstone#2 is placed in the world as regular block.
+                </li>
+                <li>
+                    <icode>processEvent(redstone block#2)</icode><br>
+                    Redstone block#2 is powering the piston, so call the piston's <icode>precheck</icode> function.
+                </li>
+                <li>
+                    <icode>precheck(redstone block#1)</icode><br>
+                    Checks slime block#1 and redstone block#2 and finds they are both pushable. Recreate their "Block 36", add them to <icode>block36Queue</icode> in the exact same order, and fire the piston.
+                </li>
+            </ol>
+        </p>
+
+        <p>
+            At this step, it's not hard to realize the whole contraption will go into an infinite loop...
+        </p>
+        <br><br>
+        <br class='dots'>
+        <br><br>
+        <p>
+            Now, what about its counterpart that doesn't go into a loop?
+            <div style='text-align:center;'>
+                <table style='display:inline-block;border-collapse: collapse;width:25%;';>
+                    <tr><td><span class='lsprite lredstone-block'></span></td><td><span class='lsprite lslime-block'></span></td></tr>
+                    <tr><td><span class='lsprite lredstone-straight'></span></td><td><span class='lsprite lslime-block'></span></td></tr>
+                    <tr><td><span class='lsprite lredstone-bot-corner'></span></td><td><span class='lsprite lpiston-up'></span></td></tr>
+                </table>
+            </div>
+        </p>
+        <p>
+            If we follow the same pseduocode earlier, we will find the order in which the blocks are processed is:
+            <div style='text-align:center;'>
+                <table style='border-collapse:collapse;display:inline-block;width:20%;';>
+                    <tr><td><span class='lsprite lredstone-block' style='color:yellow;font-weight:bold;line-height:32px;'>2</span></td><td><span class='lsprite lslime-block' style='color:firebrick;font-weight:bold;line-height:32px;'>3</span></td></tr>
+                    <tr><td></td><td><span class='lsprite lslime-block' style='color:firebrick;font-weight:bold;line-height:32px;'>1</span></td></tr>
+                    <tr><td><span class='lsprite lredstone-straight'></span></td><td><span class='lsprite lpiston-head'></span></td></tr>
+                    <tr><td><span class='lsprite lredstone-bot-corner'></span></td><td><span class='lsprite lpiston-base'></span></td></tr>
+                </table>
+            </div>
+        </p>
+        <p>
+            Similarly, when the piston finishes pulling, following steps will be taken:
+            <ol>
+                <li>
+                    <icode>block36Queue = [<b>slime block#1</b>, redstone block#2, slime block#3]</icode><br>
+                    "Block 36" of slime block#1 is destroyed, slime block#1 is placed in the world as regular block.
+                </li>
+                <li>
+                    <icode>processEvent(slime block#1)</icode><br>
+                    Slime block#1 doesn't affect much on the rest of the world, so it eventually returns.
+                </li>
+                <li>
+                    <icode>block36Queue = [slime block#1, <b>redstone block#2</b>, slime block#3]</icode><br>
+                    "Block 36" of redstone block#2 is destroyed, redstone block#2 is placed in the world as regular block.
+                </li>
+                <li>
+                    <icode>processEvent(redstone block#2)</icode><br>
+                    Redstone block#2 is powering the piston, so call the piston's <icode>precheck</icode> function.
+                </li>
+                <li>
+                    <icode>precheck(redstone block#1)</icode><br>
+                    <u>Because slime block#3 has not been placed in the world yet (it will be processed in the next step), so only its "Block 36" exists at this moment. Since "Block 36" cannot be pushed, precheck fails and returns false.</u>
+                </li>
+                <li>
+                    <icode>block36Queue = [slime block#1, redstone block#2, <b>slime block#3</b>]</icode><br>
+                    "Block 36" of slime block#3 is destroyed, slime block #3 is placed in the world as regular block.
+                </li>
+                <li>
+                    <icode>processEvent(redstone block#2)</icode><br>
+                    Slime block#3 doesn't affect much on the rest of the world, so it eventually returns.
+                </li>
+            </ol>
+        </p>
+        <p>
+            At this moment, all blocks have stopped moving and the contraption goes into stationary.
+        </p>
+        <p>
+            Pay special attention to step 5. At this step, slime block#1 and redstone#2 exist as regular blocks but slime block#3 is still in its "Block 36" form, which is not pushable. So even though the piston is powered at this moment, it won't move.
+            <div style='text-align:center;'>
+                <table style='display:inline-block;border-collapse:collapse;width:25%;';>
+                    <tr><td><span class='lsprite lredstone-block' style='border:2px solid yellow;box-sizing:border-box;'></span></td><td><span class='lsprite lslime-block' style='border:2px solid purple;box-sizing:border-box;'></span></td></tr>
+                    <tr><td><span class='lsprite lredstone-straight'></span></td><td><span class='lsprite lslime-block' style='border:2px solid yellow;box-sizing:border-box;'></span></td></tr>
+                    <tr><td><span class='lsprite lredstone-bot-corner'></span></td><td><span class='lsprite lpiston-up'></span></td></tr>
+                </table>
+            </div>
+        </p>
+        <p>
+            Apply the same logic, we now know why these following contraptions also won't fall into infinite loops. There is at least one "Block 36" that is preventing the piston from moving at the time the redstone block is powering the piston (marked in purple).
+            <div style='text-align:center;'>
+                <table style='display:inline-block;border-collapse:collapse;width:20%;';>
+                    <tr><td><span class='lsprite lslime-block' style='color:firebrick;font-weight:bold;line-height:32px;'>6</span></td><td><span class='lsprite lslime-block' style='color:firebrick;font-weight:bold;line-height:32px;border:2px solid purple;box-sizing:border-box;'>5</span></td><td><span class='lsprite lslime-block' style='color:firebrick;font-weight:bold;line-height:32px;'>3</span></td></tr>
+                    <tr><td><span class='lsprite lslime-block' style='color:firebrick;font-weight:bold;line-height:32px;'>7</span></td><td><span class='lsprite lredstone-block' style='color:yellow;font-weight:bold;line-height:32px;'>4</span></td><td><span class='lsprite lslime-block' style='color:firebrick;font-weight:bold;line-height:32px;'>2</span></td></tr>
+                    <tr><td><span class='lsprite lslime-block' style='color:firebrick;font-weight:bold;line-height:32px;'>8</span></td><td><span class='lsprite lslime-block' style='color:firebrick;font-weight:bold;line-height:32px;'>9</span></td><td><span class='lsprite lslime-block' style='color:firebrick;font-weight:bold;line-height:32px;'>1</span></td></tr>
+                    <tr><td></td><td><span class='lsprite lpiston-up'></span></td><td></td></tr>
+                </table>
+                <table style='display:inline-block;border-collapse:collapse;width:20%;';>
+                    <tr><td><span class='lsprite lslime-block' style='color:firebrick;font-weight:bold;line-height:32px;border:2px solid purple;box-sizing:border-box;'>4</span></td><td></td></tr>
+                    <tr><td><span class='lsprite lslime-block' style='color:firebrick;font-weight:bold;line-height:32px;'>3</span></td><td><span class='lsprite lslime-block' style='color:firebrick;font-weight:bold;line-height:32px;'>2</span></td></tr>
+                    <tr><td><span class='lsprite lpiston-up'></span></td><td><span class='lsprite lredstone-block' style='color:yellow;font-weight:bold;line-height:32px;'>1</span></td></tr>
+                </table>
+            </div>
+        </p>
+
+        <h2>Optional: A Simple Proof</h2>
+        <p>
+            Since Minecraft (Java Edition) is not open-source, there isn't a way to really prove my theory. However, here is a demo that proves some of our previous reasonings, specifically how slime block#3's "Block 36" is stopping pistons from moving.
+        </p>
+        <div id='proof-button-root'>
+            <i id='proof-icon' class="far fa-plus-square"></i><h3 id='proof-button'>Expand</h3>
+        </div>
+        <div id='proof-section' style='display:none;'>
+            <video src='../videos/A_Simple_Proof.mp4' width='100%' controls preload></video><br><br>
+            <p>
+                Can you see why those two contraptions prove our previous reasoning?
+            </p>
+            <p>
+                <b>Hint</b>: Look at step 4&5 in the previous section. What are the states of slime block#3 and redstone block#2 when the piston on the left side of each contraption is powered.
+            </p>
+        </div>
+
+        <h2>Final Thoughts</h2>
+        <p>
+            This post has truly taken me quite a long time. I had the initial idea in July. Now months later I can finally be confident that I've come up with a reasonable explanation that encompasses all the Minecraft redstone mechanic posts I've read and aligns with my own observations.
+        </p>
+        <p>
+            It was indeed a little frustrating during the process, for 3 times I've come with a possible explanation only to discover something later that contradicts my theory. The result, however, is very rewarding. I'm really pleased that I solved this little puzzle. It was fun recrording those clips and making this post.
+        </p>
+        <p>
+            Oh, and one final thing, I really need to learn how to do video editing. Someday...
+        </p>
+        <br><br>
+
+        <h3>Useful Links/References:</h3>
+        <p>
+            <a href='https://www.tutorialrepublic.com/css-tutorial/css-sprites.php'>Sprite image CSS</a><br>
+            <a href='https://www.w3schools.com/howto/howto_js_slideshow.asp'>Slide show CSS - W3School</a><br>
+            <a href='https://minecraft.fandom.com/wiki/Blocks?file=BlockCSS.png'>Sprite image source - FANDOM</a><br>
+            <a href='https://github.com/gnembon/fabric-carpet'>gnembon carpet mod source code - Github</a><br>
+            <a href='https://www.reddit.com/r/Minecraft/comments/3hb4fk/block_36_id/'>Block 36 rename - Reddit</a><br>
+            <a href='https://minecraft.gamepedia.com/Piston#Moving_Piston'>Moving Piston Block - MC Wiki</a><br>
+            <a href='https://minecraft.gamepedia.com/Tutorials/Flying_machines'>Flying Machine - MC Wiki</a><br>
+            <a href='https://minecraft.fandom.com/wiki/Technical_Blocks#:~:text=Piston%20Extension%2C%20or%20Block%2036,in%20the%20world%2C%20is%20black.'>Block 36 Description - FANDOM</a><br>
+            <a href='https://help.minecraft.net/hc/en-us/articles/360029728772-YouTube-Monetization'>Free use of Minecraft gameplay videos - help.minecraft.net</a><br>
+        </p>
+    </div>
+</div>
+
+<script>
+    var redstone_section = document.getElementById("redstone-section");
+    var redstone_icon = document.getElementById("redstone-icon");
+    document.getElementById("restone-button-root").onclick = (e) => {
+        if (redstone_section.style.display === "none") {
+            redstone_section.style.display = "block";
+            redstone_icon.className = 'far fa-minus-square';
+        } else {
+            redstone_section.style.display = "none";
+            redstone_icon.className = 'far fa-plus-square';
+        }
+    };
+
+    var proof_section = document.getElementById("proof-section");
+    var proof_icon = document.getElementById("proof-icon");
+    document.getElementById("proof-button-root").onclick = (e) => {
+        if (proof_section.style.display === "none") {
+            proof_section.style.display = "block";
+            proof_icon.className = 'far fa-minus-square';
+        } else {
+            proof_section.style.display = "none";
+            proof_icon.className = 'far fa-plus-square';
+        }
+    };
+</script>
+
+<script>
+    var slideIndex = 1;
+    showSlide(slideIndex)
+
+    function plusSlide(n) {
+        showSlide(slideIndex += n);
+    }
+
+    function currentSlide(n) {
+        slideIndex = n
+        showSlide(slideIndex);
+    }
+
+    function showSlide(n) {
+        var i;
+        var slides = document.getElementsByClassName("myslide");
+        var dots = document.getElementsByClassName("dot");
+        if(n > slides.length) {
+            slideIndex = 1;
+        } else if(n < 1) {
+            slideIndex = slides.length
+        }
+        for(i = 0; i < slides.length; i++) {
+            if(i == slideIndex-1) {
+                slides[i].style.display = "block";
+            } else {
+                slides[i].style.display = "none";
+            }
+        }
+    }
+</script>

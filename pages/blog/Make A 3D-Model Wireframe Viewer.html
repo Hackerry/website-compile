@@ -1,0 +1,548 @@
+<!-- The project started one Saturday morning when I suddenly had the idea of making a "rotating cube" in HTML canvas. Although I knew there were a lot of resources online about it, I wanted to start with only my knowledge and see how far I could go before resorting to external resources eventually. -->
+<!-- study-notes -->
+<div id='content-wrapper'>
+    <div id='content'>
+        <h1>Make A 3D-Model Wireframe Viewer</h1>
+        <p id='content-date'>Mar. 23, 2021, 15:12:31</p>
+
+        <p>
+            The project started one Saturday morning when I suddenly had the idea of making a "rotating cube" in HTML canvas. Although I knew there were a lot of resources online about it, I wanted to start with only my knowledge and see how far I could go before resorting to external resources eventually.
+        </p>
+        <p>
+            All code can be found here <a href="../files/3DUtils.js">3DUtil.js</a>
+        </p>
+
+        <h2>Representing and Manipulating A Cube in 3D</h2>
+        <p>
+            First I create an HTML page with a canvas of size 600*600:
+        </p>
+        <ul class='ccode'>
+            <li><pre><span style='color:#2196f3'>&lt;html&gt;</span></pre></li>
+            <li><pre>    <span style='color:#2196f3'>&lt;body&gt;</span></pre></li>
+            <li><pre>        <span style='color:#2196f3'>&lt;canvas width=<span style='color:#4caf50'>600</span> height=<span style='color:#4caf50'>600</span>&gt;</span></pre></li>
+            <li><pre>        <span style='color:#2196f3'>&lt;script&gt;</span></pre></li>
+            <li><pre>        // Everything goes here...</li>
+            <li><pre>        <span style='color:#2196f3'>&lt;/script&gt;</span></pre></li>
+            <li><pre>    <span style='color:#2196f3'>&lt;/body&gt;</span></pre></li>
+            <li><pre><span style='color:#2196f3'>&lt;/html&gt;</span></pre></li>
+        </ul>
+
+        <br>
+        <br class='dots'>
+        <br>
+
+        <p>
+            I want to draw a cube as the starting point. To represent a cube in 3D, it's intuitive to assign its 8 vertices their individual coordinates in a 3D euclidean space. I define the size of the cube to be 200 pixels with its center at the origin (0,0,0). Then I represent each edge with the name of its 2 vertices.
+        </p>
+        <ul class='ccode'>
+            <li><pre><span style='color:#2196f3'>var</span> points = {</pre></li><li><pre>    a: [<span style='color:#4caf50'>100</span>,<span style='color:#4caf50'>100</span>,<span style='color:#4caf50'>100</span>],</pre></li><li><pre>    b: [<span style='color:#4caf50'>100</span>,<span style='color:#4caf50'>-100</span>,<span style='color:#4caf50'>100</span>],</pre></li><li><pre>    c: [<span style='color:#4caf50'>100</span>,<span style='color:#4caf50'>100</span>,<span style='color:#4caf50'>-100</span>],</pre></li><li><pre>    d: [<span style='color:#4caf50'>-100</span>,<span style='color:#4caf50'>100</span>,<span style='color:#4caf50'>100</span>],</pre></li><li><pre>    e: [<span style='color:#4caf50'>100</span>,<span style='color:#4caf50'>-100</span>,<span style='color:#4caf50'>-100</span>],</pre></li><li><pre>    f: [<span style='color:#4caf50'>-100</span>,<span style='color:#4caf50'>100</span>,<span style='color:#4caf50'>-100</span>],</pre></li><li><pre>    g: [<span style='color:#4caf50'>-100</span>,<span style='color:#4caf50'>-100</span>,<span style='color:#4caf50'>100</span>],</pre></li><li><pre>    h: [<span style='color:#4caf50'>-100</span>,<span style='color:#4caf50'>-100</span>,<span style='color:#4caf50'>-100</span>],</pre></li><li><pre>};</pre></li><li><pre><span style='color:#2196f3'>var</span> edges = [[<span style='color:#d8721a'>'a'</span>, <span style='color:#d8721a'>'b'</span>], [<span style='color:#d8721a'>'a'</span>, <span style='color:#d8721a'>'c'</span>], [<span style='color:#d8721a'>'a'</span>, <span style='color:#d8721a'>'d'</span>], [<span style='color:#d8721a'>'b'</span>, <span style='color:#d8721a'>'e'</span>], [<span style='color:#d8721a'>'b'</span>, <span style='color:#d8721a'>'g'</span>], [<span style='color:#d8721a'>'c'</span>, <span style='color:#d8721a'>'e'</span>], </pre></li><li><pre>             [<span style='color:#d8721a'>'c'</span>, <span style='color:#d8721a'>'f'</span>], [<span style='color:#d8721a'>'d'</span>, <span style='color:#d8721a'>'f'</span>], [<span style='color:#d8721a'>'d'</span>, <span style='color:#d8721a'>'g'</span>], [<span style='color:#d8721a'>'e'</span>, <span style='color:#d8721a'>'h'</span>], [<span style='color:#d8721a'>'f'</span>, <span style='color:#d8721a'>'h'</span>], [<span style='color:#d8721a'>'g'</span>, <span style='color:#d8721a'>'h'</span>]];</pre></li>
+        </ul>
+        <br>
+        <br>
+
+        <p>
+            Because HTML canvas has its origin (0, 0) in the upper-left corner, I need to offset the coordinates to make the vertices centered in the canvas element. I also take this chance to implement the <icode>draw()</icode> function which takes the <icode>x</icode>, <icode>y</icode> coordinates of the two end vertices of an edge and draw a line between them.
+        </p>
+        <ul class='ccode'>
+            <li><pre><span style='color:#9e9e9e'>// Get canvas element and set color styles</span></pre></li><li><pre><span style='color:#9e9e9e'></span><span style='color:#2196f3'>var</span> canvas = document.<span style='color:#ffeb3b'>getElementById</span>(<span style='color:#d8721a'>'canvas'</span>);</pre></li><li><pre><span style='color:#2196f3'>var</span> ctx = canvas.<span style='color:#ffeb3b'>getContext</span>(<span style='color:#d8721a'>'2d'</span>);</pre></li><li><pre>ctx.font = <span style='color:#d8721a'>"12px Arial"</span>;</pre></li><li><pre>ctx.fillStyle = <span style='color:#d8721a'>'#000000'</span>;</pre></li><li><pre><span style='color:#9e9e9e'>// Offsets to shift canvas origin to the center</span></pre></li><li><pre><span style='color:#9e9e9e'></span><span style='color:#2196f3'>var</span> WIDTH = canvas.width;</pre></li><li><pre><span style='color:#2196f3'>var</span> HEIGHT = canvas.height;</pre></li><li><pre><span style='color:#2196f3'>var</span> HAXIS = WIDTH/<span style='color:#4caf50'>2</span>;</pre></li><li><pre><span style='color:#2196f3'>var</span> VAXIS = HEIGHT/<span style='color:#4caf50'>2</span>;</pre></li><li><pre><span style='color:#9e9e9e'>// Draw the edges</span></pre></li><li><pre><span style='color:#9e9e9e'></span><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>draw</span>() {</pre></li><li><pre>    <span style='color:#9e9e9e'>// Clear canvas</span></pre></li><li><pre><span style='color:#9e9e9e'></span>    ctx.<span style='color:#ffeb3b'>clearRect</span>(<span style='color:#4caf50'>0</span>, <span style='color:#4caf50'>0</span>, WIDTH, HEIGHT);</pre></li><li><pre>    <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> i <span style='color:#2196f3'>in</span> edges) {</pre></li><li><pre>        <span style='color:#2196f3'>var</span> edge = edges[i];</pre></li><li><pre>        <span style='color:#9e9e9e'>// Move the points to the center of canvas</span></pre></li><li><pre><span style='color:#9e9e9e'></span>        <span style='color:#2196f3'>var</span> dot1 = [HAXIS+points[edge[<span style='color:#4caf50'>0</span>]][<span style='color:#4caf50'>0</span>], VAXIS+points[edge[<span style='color:#4caf50'>0</span>]][<span style='color:#4caf50'>1</span>]];</pre></li><li><pre>        <span style='color:#2196f3'>var</span> dot2 = [HAXIS+points[edge[<span style='color:#4caf50'>1</span>]][<span style='color:#4caf50'>0</span>], VAXIS+points[edge[<span style='color:#4caf50'>1</span>]][<span style='color:#4caf50'>1</span>]];</pre></li><li><pre>        <span style='color:#9e9e9e'>// Draw edges</span></pre></li><li><pre><span style='color:#9e9e9e'></span>        ctx.<span style='color:#ffeb3b'>beginPath</span>();</pre></li><li><pre>        ctx.<span style='color:#ffeb3b'>moveTo</span>(dot1[<span style='color:#4caf50'>0</span>], dot1[<span style='color:#4caf50'>1</span>]);</pre></li><li><pre>        ctx.<span style='color:#ffeb3b'>lineTo</span>(dot2[<span style='color:#4caf50'>0</span>], dot2[<span style='color:#4caf50'>1</span>]);</pre></li><li><pre>        ctx.<span style='color:#ffeb3b'>stroke</span>();</pre></li><li><pre>    }</pre></li><li><pre>}</pre></li><li><pre></pre></li><li><pre><span style='color:#9e9e9e'>// Draw cube on page load</span></pre></li><li><pre><span style='color:#9e9e9e'></span><span style='color:#ffeb3b'>draw</span>();</pre></li>
+        </ul>
+
+        <br>
+        <br>
+
+        <p>
+            To rotate the cube, I can borrow the concept of a "<b>rotation matrix</b>" from linear algebra. When a rotation matrix is multiplied by a coordinate, I can get the resulting coordinate after the rotation.
+        </p>
+        <p>
+            More conveniently, rotation matrices A and B can be multiplied together before the resulting matrix is applied to a coordinate. The resulting coordinate is the result of rotating by matrix B and A, in that order (To read more about rotation matrix <a href='https://en.wikipedia.org/wiki/Rotation_matrix'>here</a>).
+        </p>
+
+        <p>
+            I could implement a matrix multiplication helper function, but it's simple enough for my case to just implement the rotation by X/Y/Z-axis functions using the result of matrix multiplications.
+        </p>
+        <ul class='ccode'>
+            <li><pre><span style='color:#9e9e9e'>// points - points to rotate</span></pre></li><li><pre><span style='color:#9e9e9e'></span><span style='color:#9e9e9e'>// degree - degree of rotation in radians</span></pre></li><li><pre><span style='color:#9e9e9e'></span><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>rotateX</span>(points, degree) {</pre></li><li><pre>    <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> v <span style='color:#2196f3'>in</span> points) {</pre></li><li><pre>        points[v] = [points[v][<span style='color:#4caf50'>0</span>], Math.<span style='color:#ffeb3b'>cos</span>(degree)*points[v][<span style='color:#4caf50'>1</span>]-Math.<span style='color:#ffeb3b'>sin</span>(degree)*points[v][<span style='color:#4caf50'>2</span>], </pre></li><li><pre>                     Math.<span style='color:#ffeb3b'>sin</span>(degree)*points[v][<span style='color:#4caf50'>1</span>]+Math.<span style='color:#ffeb3b'>cos</span>(degree)*points[v][<span style='color:#4caf50'>2</span>]];</pre></li><li><pre>    }</pre></li><li><pre>}</pre></li><li><pre></pre></li><li><pre><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>rotateY</span>(points, degree) {</pre></li><li><pre>    <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> v <span style='color:#2196f3'>in</span> points) {</pre></li><li><pre>        points[v] = [Math.<span style='color:#ffeb3b'>cos</span>(degree)*points[v][<span style='color:#4caf50'>0</span>]+Math.<span style='color:#ffeb3b'>sin</span>(degree)*points[v][<span style='color:#4caf50'>2</span>], points[v][<span style='color:#4caf50'>1</span>], </pre></li><li><pre>                     -Math.<span style='color:#ffeb3b'>sin</span>(degree)*points[v][<span style='color:#4caf50'>0</span>]+Math.<span style='color:#ffeb3b'>cos</span>(degree)*points[v][<span style='color:#4caf50'>2</span>]];</pre></li><li><pre>    }</pre></li><li><pre>}</pre></li><li><pre></pre></li><li><pre><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>rotateZ</span>(points, degree) {</pre></li><li><pre>    <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> v <span style='color:#2196f3'>in</span> points) {</pre></li><li><pre>        points[v] = [Math.<span style='color:#ffeb3b'>cos</span>(degree)*points[v][<span style='color:#4caf50'>0</span>]-Math.<span style='color:#ffeb3b'>sin</span>(degree)*points[v][<span style='color:#4caf50'>1</span>], </pre></li><li><pre>                     Math.<span style='color:#ffeb3b'>sin</span>(degree)*points[v][<span style='color:#4caf50'>0</span>]+Math.<span style='color:#ffeb3b'>cos</span>(degree)*points[v][<span style='color:#4caf50'>1</span>], points[v][<span style='color:#4caf50'>2</span>]];</pre></li><li><pre>    }</pre></li><li><pre>}</pre></li>
+        </ul>
+        <br>
+        <p>
+            Finally, to add mouse event listeners to rotate the cube when dragging within canvas:
+        </p>
+        <ul class='ccode'>
+            <li><pre><span style='color:#9e9e9e'>// Register mouse event</span></pre></li><li><pre><span style='color:#9e9e9e'></span><span style='color:#2196f3'>var</span> rect = canvas.<span style='color:#ffeb3b'>getBoundingClientRect</span>();</pre></li><li><pre><span style='color:#2196f3'>var</span> mouseDown = <span style='color:#2196f3'>false</span>;</pre></li><li><pre><span style='color:#2196f3'>var</span> startX, startY;</pre></li><li><pre></pre></li><li><pre><span style='color:#9e9e9e'>// Move 0.5 radians when mouse is moved 1 pixel</span></pre></li><li><pre><span style='color:#9e9e9e'></span><span style='color:#2196f3'>var</span> moveRadian = <span style='color:#ffeb3b'>toRadian</span>(<span style='color:#4caf50'>0</span>.<span style='color:#4caf50'>5</span>);</pre></li><li><pre></pre></li><li><pre>canvas.onmousedown = <span style='color:#2196f3'>function</span>(e) {</pre></li><li><pre>    mouseDown = <span style='color:#2196f3'>true</span>;</pre></li><li><pre>    startX = e.clientX-rect.left;</pre></li><li><pre>    startY = e.clientY-rect.top;</pre></li><li><pre>}</pre></li><li><pre>canvas.onmousemove = <span style='color:#2196f3'>function</span>(e) {</pre></li><li><pre>    <span style='color:#2196f3'>if</span>(mouseDown) {</pre></li><li><pre>        <span style='color:#2196f3'>var</span> newX = e.clientX-rect.left;</pre></li><li><pre>        <span style='color:#2196f3'>var</span> newY = e.clientY-rect.top;</pre></li><li><pre></pre></li><li><pre>        <span style='color:#ffeb3b'>rotateY</span>(points, (startX-newX)*moveRadian);</pre></li><li><pre>        <span style='color:#ffeb3b'>rotateX</span>(points, (newY-startY)*moveRadian);</pre></li><li><pre></pre></li><li><pre>        startX = newX;</pre></li><li><pre>        startY = newY;</pre></li><li><pre></pre></li><li><pre>        <span style='color:#ffeb3b'>draw</span>();</pre></li><li><pre>    }</pre></li><li><pre>}</pre></li><li><pre>canvas.onmouseup = <span style='color:#2196f3'>function</span>(e) {</pre></li><li><pre>    mouseDown = <span style='color:#2196f3'>false</span>;</pre></li><li><pre>}</pre></li><li><pre></pre></li><li><pre><span style='color:#9e9e9e'>// Helper function to get radians from degrees</span></pre></li><li><pre><span style='color:#9e9e9e'></span><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>toRadian</span>(degree) {</pre></li><li><pre>    <span style='color:#2196f3'>return</span> degree * Math.PI / <span style='color:#4caf50'>180</span>;</pre></li><li><pre>}</pre></li>
+        </ul>
+        <br>
+        <p>
+            Example result:
+        </p>
+        <canvas id='canvas1' width=400 height=400 style='border:1px solid black;'></canvas>
+        <br>
+        <br>
+
+        <h2>Tangent: More Geometrics</h2>
+        <p>
+            After the initial success, I was thrilled to try out more geometrics. I successfully made a tetrahedron wireframe with some trigonometry. Then I started to think about more complicated geometric shapes like spheres.
+        </p>
+        
+        <ul class='ccode'>
+            <li><pre><span style='color:#9e9e9e'>// Coordinates for tetrahedron</span></pre></li>
+            <li><pre><span style='color:#2196f3'>var</span> size = <span style='color:#4caf50'>2</span>.<span style='color:#4caf50'>0</span> * height / Math.<span style='color:#ffeb3b'>sqrt</span>(<span style='color:#4caf50'>3</span>);</pre></li><li><pre><span style='color:#2196f3'>var</span> upperHeight = size / Math.<span style='color:#ffeb3b'>sqrt</span>(<span style='color:#4caf50'>3</span>);</pre></li><li><pre><span style='color:#2196f3'>var</span> lowerHeight = height - upperHeight;</pre></li><li><pre><span style='color:#2196f3'>var</span> points = {</pre></li><li><pre>    a: [<span style='color:#4caf50'>0</span>,<span style='color:#4caf50'>0</span>,upperHeight],</pre></li><li><pre>    b: [-size/<span style='color:#4caf50'>2</span>,-lowerHeight,-lowerHeight],</pre></li><li><pre>    c: [size/<span style='color:#4caf50'>2</span>,-lowerHeight,-lowerHeight],</pre></li><li><pre>    d: [<span style='color:#4caf50'>0</span>,upperHeight,-lowerHeight]</pre></li><li><pre>}</pre></li><li><pre><span style='color:#2196f3'>var</span> edges = [[<span style='color:#d8721a'>'a'</span>, <span style='color:#d8721a'>'b'</span>], [<span style='color:#d8721a'>'a'</span>, <span style='color:#d8721a'>'c'</span>], [<span style='color:#d8721a'>'a'</span>, <span style='color:#d8721a'>'d'</span>],</pre></li><li><pre>             [<span style='color:#d8721a'>'b'</span>, <span style='color:#d8721a'>'c'</span>], [<span style='color:#d8721a'>'b'</span>, <span style='color:#d8721a'>'d'</span>], [<span style='color:#d8721a'>'c'</span>, <span style='color:#d8721a'>'d'</span>]];</pre></li>
+        </ul>
+
+        <br>
+        <br>
+        <br>
+
+        <p>
+            Unlike cubes and other polygons which have a fixed number of vertices that can be precalculated and hardcoded, spheres can be divided into infinite vertices and edges. The more vertices it has, the more spherical the resulting shape is (ie. calculus). So this means vertices must be dynamically generated in code.
+        </p>
+        
+        <p>
+            To make a wireframe sphere, I need to first get the coordinates of vertices on the sphere that is some fixed angle <icode>x</icode> degree apart from each other and then connect them to make the longitude and latitude lines. On further analyzing the problem, it seems only one set of loops is enough (either latitude or longitude lines) to calculate all vertices. The other set of lines can be readily made by connecting existing vertices.
+        </p>
+        <p>
+            Another observation is that longitude and latitude lines are all loops/circles. I can make a helper function that calculates points on a circle, given the radius of that circle, which then can be translated/scaled to account for all such loops on the sphere. The final code looks like this:
+        </p>
+        <ul class='ccode'>
+            <li><pre><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>getPointsOnCircle</span>(radius, numPoints) {</pre></li><li><pre>    <span style='color:#9e9e9e'>// Polar point</span></pre></li><li><pre><span style='color:#9e9e9e'></span>    <span style='color:#2196f3'>if</span>(radius === <span style='color:#4caf50'>0</span>) {</pre></li><li><pre>        <span style='color:#2196f3'>return</span> [[<span style='color:#4caf50'>0</span>, <span style='color:#4caf50'>0</span>, <span style='color:#4caf50'>0</span>]];</pre></li><li><pre>    }</pre></li><li><pre></pre></li><li><pre>    <span style='color:#9e9e9e'>// Edge case check</span></pre></li><li><pre><span style='color:#9e9e9e'></span>    <span style='color:#2196f3'>if</span>(radius &lt; <span style='color:#4caf50'>0</span>) <span style='color:#2196f3'>return</span> <span style='color:#2196f3'>null</span>;</pre></li><li><pre>    <span style='color:#2196f3'>else</span> <span style='color:#2196f3'>if</span>(numPoints &lt;= <span style='color:#4caf50'>0</span>) <span style='color:#2196f3'>return</span> <span style='color:#2196f3'>null</span>;</pre></li><li><pre></pre></li><li><pre>    <span style='color:#2196f3'>var</span> gapDegree = ALL_DEGREE / numPoints;</pre></li><li><pre>    <span style='color:#2196f3'>var</span> points = [];</pre></li><li><pre>    <span style='color:#2196f3'>var</span> startPoint = [radius, <span style='color:#4caf50'>0</span>, <span style='color:#4caf50'>0</span>];</pre></li><li><pre>    <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> i = <span style='color:#4caf50'>0</span>; i &lt; numPoints; i++) {</pre></li><li><pre>        <span style='color:#2196f3'>var</span> newPoint = [[...startPoint]];</pre></li><li><pre>        <span style='color:#ffeb3b'>rotateZ</span>(newPoint, i*gapDegree)</pre></li><li><pre>        points.<span style='color:#ffeb3b'>push</span>(newPoint[<span style='color:#4caf50'>0</span>]);</pre></li><li><pre>    }</pre></li><li><pre></pre></li><li><pre>    <span style='color:#2196f3'>return</span> points;</pre></li><li><pre>}</pre></li><li><pre></pre></li><li><pre><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>getSphere</span>(radius, numLoops) {</pre></li><li><pre>    <span style='color:#9e9e9e'>// Edge case check</span></pre></li><li><pre><span style='color:#9e9e9e'></span>    <span style='color:#2196f3'>if</span>(radius &lt; <span style='color:#4caf50'>0</span>) <span style='color:#2196f3'>return</span> <span style='color:#2196f3'>null</span>;</pre></li><li><pre>    <span style='color:#2196f3'>else</span> <span style='color:#2196f3'>if</span>(numLoops &lt;= <span style='color:#4caf50'>0</span>) <span style='color:#2196f3'>return</span> <span style='color:#2196f3'>null</span>;</pre></li><li><pre></pre></li><li><pre>    <span style='color:#2196f3'>var</span> points = {};</pre></li><li><pre>    <span style='color:#2196f3'>var</span> edges = [];</pre></li><li><pre>    <span style='color:#2196f3'>var</span> counter = <span style='color:#4caf50'>0</span>;</pre></li><li><pre>    <span style='color:#2196f3'>var</span> gapDegree = ALL_DEGREE / (<span style='color:#4caf50'>2</span> * numLoops);</pre></li><li><pre>    <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> i = <span style='color:#4caf50'>1</span>; i &lt; numLoops; i++) {</pre></li><li><pre>        <span style='color:#2196f3'>var</span> circlePoints = <span style='color:#ffeb3b'>getPointsOnCircle</span>(Math.<span style='color:#ffeb3b'>cos</span>(Math.PI/<span style='color:#4caf50'>2</span>-i*gapDegree)*radius, numLoops);</pre></li><li><pre></pre></li><li><pre>        <span style='color:#9e9e9e'>// Get z coordinate</span></pre></li><li><pre><span style='color:#9e9e9e'></span>        <span style='color:#2196f3'>var</span> z = Math.<span style='color:#ffeb3b'>sin</span>(Math.PI/<span style='color:#4caf50'>2</span> - i*gapDegree) * radius;</pre></li><li><pre></pre></li><li><pre>        <span style='color:#9e9e9e'>// Add latitude vertices and connect them</span></pre></li><li><pre><span style='color:#9e9e9e'></span>        <span style='color:#2196f3'>var</span> startCounter = counter;</pre></li><li><pre><span style='color:#9e9e9e'></span>        <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> j <span style='color:#2196f3'>in</span> circlePoints) {</pre></li><li><pre>            <span style='color:#2196f3'>var</span> point = circlePoints[j];</pre></li><li><pre>            point[<span style='color:#4caf50'>2</span>] = z;</pre></li><li><pre></pre></li><li><pre>            <span style='color:#9e9e9e'>// Connect vertices to form longitude loops</span></pre></li><li><pre><span style='color:#9e9e9e'></span>            <span style='color:#2196f3'>if</span>(i !== <span style='color:#4caf50'>1</span>) {</pre></li><li><pre>                edges.<span style='color:#ffeb3b'>push</span>([counter, counternumLoops]);</pre></li><li><pre>            }</pre></li><li><pre>            points[counter++] = point;</pre></li><li><pre>        }</pre></li><li><pre></pre></li><li><pre>        <span style='color:#9e9e9e'>// Connect vertices to form a circle</span></pre></li><li><pre><span style='color:#9e9e9e'></span>        <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> j = <span style='color:#4caf50'>0</span>; j &lt; numLoops-<span style='color:#4caf50'>1</span>; j++) edges.<span style='color:#ffeb3b'>push</span>([startCounter, ++startCounter]);</pre></li><li><pre>        <span style='color:#9e9e9e'>// Close the circle</span></pre></li><li><pre><span style='color:#9e9e9e'></span>        edges.<span style='color:#ffeb3b'>push</span>([startCounter, startCounternumLoops+<span style='color:#4caf50'>1</span>]);</pre></li><li><pre>    }</pre></li><li><pre></pre></li><li><pre>    <span style='color:#9e9e9e'>// Add polar point coordinates</span></pre></li><li><pre><span style='color:#9e9e9e'></span>    <span style='color:#2196f3'>var</span> topPolarCounter = counter;</pre></li><li><pre>    points[counter++] = [<span style='color:#4caf50'>0</span>, <span style='color:#4caf50'>0</span>, radius]</pre></li><li><pre>    <span style='color:#2196f3'>var</span> botPolarCounter = counter;</pre></li><li><pre>    points[counter++] = [<span style='color:#4caf50'>0</span>, <span style='color:#4caf50'>0</span>, -radius]</pre></li><li><pre></pre></li><li><pre>    <span style='color:#9e9e9e'>// Connect polar points to latitude loops</span></pre></li><li><pre><span style='color:#9e9e9e'></span>    <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> j = <span style='color:#4caf50'>0</span>; j &lt; numLoops; j++) {</pre></li><li><pre>        edges.<span style='color:#ffeb3b'>push</span>([topPolarCounter, j]);</pre></li><li><pre>        edges.<span style='color:#ffeb3b'>push</span>([botPolarCounter, topPolarCounter-j-<span style='color:#4caf50'>1</span>]);</pre></li><li><pre>    }</pre></li><li><pre></pre></li><li><pre>    <span style='color:#2196f3'>return</span> [points, edges];</pre></li><li><pre>}</pre></li>
+        </ul>
+        
+        <p>
+            The <icode>getPointsOnCircle()</icode> function takes in the radius of a circle and the number of segments <icode>x</icode> that circle needs to be divided into. Given a circle has <icode>360</icode> degrees, each segment must has <icode>360/x</icode> degrees. Therefore, using trigonometry I can calculate the <icode>x</icode>, <icode>y</icode> coordiniates of each points when they lie in a 2D plane with the center of the circle at the origin.
+        </p>
+        <p>
+            Using this helper function, I can calculate the points on every latitude loop at a specific Z value (again using trig to get different radii from Z values). Once I have all the points, I can translate them up or down the Z-axis to form the latitude loops.
+        </p>
+        <p>
+            Then I need to connect latitude loops, within the set of points returned by <icode>getPointsOnCircle()</icode>, as well as longitude loops, between points on consecutive latitude loops. I use a trick here to mark points on latitude loops from the top to the bottom of the sphere with increasing number values. Therefore for any latitude point with id <icode>y</icode>, it's immediate neighboring latitude points are at <icode>y-1</icode> and <icode>y+1</icode> (or <icode>y-x+1</icode> for the last point on that loop). It's immediate neighboring longitude points are at <icode>y-x</icode> and <icode>y+x</icode> (or are the polar points).
+        </p>
+        <p>
+            Finally, I add top and bottom polar points and connect them to the mesh.
+        </p>
+        <h3>
+            <u>Demo: See next section.</u>
+        </h3>
+
+        <h2>.obj File Wireframe Viewer</h2>
+        <p>
+            Given I've done so much work on the project already, I decided to try it on more complicated 3D models that were not necessarily simple geometries.
+        </p>
+        <p>
+            I learned from a quick search that <a href='https://en.wikipedia.org/wiki/Wavefront_.obj_file'>Waveform .OBJ file</a> is what I need to extract 3D model information of vertices and edges. However, a parser is needed to extract that information.
+        </p>
+        <p>
+            Inspiration from <a href='https://wblut.com/reading-an-obj-file-in-processing/'>here</a>:
+        </p>
+        <ul class='ccode'>
+            <li><pre><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>parseObjFile</span>(input) {</pre></li><li><pre>    <span style='color:#2196f3'>var</span> lines = input.<span style='color:#ffeb3b'>split</span>(<span style='color:#d8721a'>'</span><span style='color:#ffeb3b'>\n</span><span style='color:#d8721a'>'</span>);</pre></li><li><pre>    <span style='color:#2196f3'>var</span> points = {};</pre></li><li><pre>    <span style='color:#2196f3'>var</span> counter = <span style='color:#4caf50'>1</span>;            <span style='color:#9e9e9e'>// Obj file is 1-based indexing</span></pre></li><li><pre><span style='color:#9e9e9e'></span>    <span style='color:#2196f3'>var</span> edges = [];</pre></li><li><pre>    <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> i = <span style='color:#4caf50'>0</span>; i &lt; lines.length; i++) {</pre></li><li><pre>        <span style='color:#2196f3'>var</span> parts = lines[i].<span style='color:#ffeb3b'>split</span>(<span style='color:#d8721a'>' '</span>);</pre></li><li><pre>        <span style='color:#2196f3'>switch</span>(parts[<span style='color:#4caf50'>0</span>]) {</pre></li><li><pre>            <span style='color:#2196f3'>case</span> <span style='color:#d8721a'>'v'</span>:</pre></li><li><pre>                <span style='color:#9e9e9e'>// A vertex, store it</span></pre></li><li><pre><span style='color:#9e9e9e'></span>                <span style='color:#2196f3'>var</span> coordinates = lines[i].<span style='color:#ffeb3b'>split</span>(<span style='color:#d8721a'>' '</span>);</pre></li><li><pre>                <span style='color:#2196f3'>var</span> newPoint = [<span style='color:#ffeb3b'>parseFloat</span>(coordinates[<span style='color:#4caf50'>1</span>])*initialScale, </pre></li><li><pre>                                <span style='color:#ffeb3b'>parseFloat</span>(coordinates[<span style='color:#4caf50'>2</span>])*initialScale,</pre></li><li><pre>                                <span style='color:#ffeb3b'>parseFloat</span>(coordinates[<span style='color:#4caf50'>3</span>])*initialScale];</pre></li><li><pre>                points[counter++] = newPoint;</pre></li><li><pre>                <span style='color:#2196f3'>break</span>;</pre></li><li><pre>            <span style='color:#2196f3'>case</span> <span style='color:#d8721a'>'f'</span>:</pre></li><li><pre>                <span style='color:#9e9e9e'>// A face, record edges</span></pre></li><li><pre><span style='color:#9e9e9e'></span>                <span style='color:#2196f3'>var</span> facePoints = lines[i].<span style='color:#ffeb3b'>split</span>(<span style='color:#d8721a'>' '</span>);</pre></li><li><pre>                <span style='color:#2196f3'>var</span> lastPoint = <span style='color:#2196f3'>null</span>, currPoint;</pre></li><li><pre>                <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> j = <span style='color:#4caf50'>1</span>; j &lt; facePoints.length; j++) {</pre></li><li><pre>                    currPoint = facePoints[j].<span style='color:#ffeb3b'>split</span>(<span style='color:#d8721a'>'/'</span>)[<span style='color:#4caf50'>0</span>];</pre></li><li><pre>                    <span style='color:#2196f3'>if</span>(lastPoint !== <span style='color:#2196f3'>null</span>) edges.<span style='color:#ffeb3b'>push</span>([lastPoint, currPoint]);</pre></li><li><pre>                    lastPoint = currPoint;</pre></li><li><pre>                }</pre></li><li><pre></pre></li><li><pre>                <span style='color:#9e9e9e'>// Closed face</span></pre></li><li><pre><span style='color:#9e9e9e'></span>                edges.<span style='color:#ffeb3b'>push</span>([lastPoint, facePoints[<span style='color:#4caf50'>1</span>].<span style='color:#ffeb3b'>split</span>(<span style='color:#d8721a'>'/'</span>)[<span style='color:#4caf50'>0</span>]]);</pre></li><li><pre>                <span style='color:#2196f3'>break</span>;</pre></li><li><pre>            <span style='color:#2196f3'>default</span>:</pre></li><li><pre>                <span style='color:#2196f3'>continue</span>;</pre></li><li><pre>        }</pre></li><li><pre>    }</pre></li><li><pre></pre></li><li><pre>    console.<span style='color:#ffeb3b'>log</span>(<span style='color:#d8721a'>"Loaded"</span>, Object.<span style='color:#ffeb3b'>keys</span>(points).length, <span style='color:#d8721a'>"vertices and"</span>, edges.length, <span style='color:#d8721a'>"edges"</span>);</pre></li><li><pre>    <span style='color:#2196f3'>return</span> [points, edges];</pre></li><li><pre>}</pre></li>
+        </ul>
+        <p>
+            There are many elements in a .OBJ file. The only things I'm interested in are the vertices information (prefixed with <icode>v</icode>) and face information (prefixed with <icode>f</icode>). Vertices information is straightforward to obtain as the vertices are stored in the format: <icode>v [x coord] [y coord] [z coord]</icode>. For edges, I need to desconstruct the stored closed faces of the 3D model, in the format: <icode>f [v1] [v2] [v3] ...</icode>, into edges and to only retain face connection information (aside from texture and face normal information separated by <icode>'/'</icode>).
+        </p>
+
+        <h2>Demo</h2>
+        <p>
+            Now with everything inplace, let's try it out:
+        </p>
+        <p>
+            <u><b>Warning: Some .OBJ file has too many vertices. Loading it in may freeze the browser. I recommend starting with 3D models with a small number of vertices, before moving on to those with more vertices.</b></u>
+        </p>
+        <p>
+            Here are some 3D model I made in the past using blender that you can try out:<br>
+            <a href="../files/Box.obj" download>Box in a room (270 vertices)</a><br>
+            <a href="../files/Saber.obj" download>Saber (4842 vertices)</a><br>
+            <a href="../files/Rook.obj" download>Rook (13791 vertices)</a><br>
+        </p>
+        <div>
+            <canvas width=600 height=600 id='canvas' style='border: 1px solid black;'></canvas>
+            <div id='controller-div'>
+                <select id='object-select'>
+                    <option value="cube" selected>Cube</option>
+                    <option value='tetra'>Tetrahedron</option>
+                    <option value='sphere'>Sphere</option>
+                </select>
+                <span>Size:</span>
+                <input id='sizeInput' type='text' placeholder='Size' value='100' />
+                <span>Divisions:</span>
+                <input id='numDivInput' type='text' placeholder='# of loops' value='10' />
+                <input type='checkbox' name='showText' id='showText' />
+                <label for='showText'>Show Vertices</label>
+                <input type="file" name="objFile" id="objfileInput" onchange="loadFile(event)">
+            </div>
+        </div>
+
+        <h2>Optimization</h2>
+        <p>
+            As the number of vertices increases significantly for real 3D models, the performance of the program suffers (ie. staggard canvas refreshing and high response time). It's time for potential optimizations.
+        </p>
+        <p>
+            It's not hard to reason that the most resource-intense and the most often run piece of code is that responsible for 1)rotating and 2)drawing the vertices.
+        </p>
+
+        <p>
+            Here I made 3 improvements to the <icode>rotate_</icode> functions following several common guidelines for increasing performances:
+        </p>
+        <ul class='ccode'>
+            <li><pre><span style='color:#9e9e9e'>// Original rotate</span></pre></li><li><pre><span style='color:#9e9e9e'></span><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>rotateXO</span>(points, degree) {</pre></li><li><pre>    <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> v <span style='color:#2196f3'>in</span> points) {</pre></li><li><pre>        points[v] = [points[v][<span style='color:#4caf50'>0</span>], Math.<span style='color:#ffeb3b'>cos</span>(degree)*points[v][<span style='color:#4caf50'>1</span>]Math.<span style='color:#ffeb3b'>sin</span>(degree)*points[v][<span style='color:#4caf50'>2</span>],</pre></li><li><pre>                     Math.<span style='color:#ffeb3b'>sin</span>(degree)*points[v][<span style='color:#4caf50'>1</span>]+Math.<span style='color:#ffeb3b'>cos</span>(degree)*points[v][<span style='color:#4caf50'>2</span>]];</pre></li><li><pre>    }</pre></li><li><pre>}</pre></li><li><pre></pre></li><li><pre><span style='color:#9e9e9e'>// Pull out constants</span></pre></li><li><pre><span style='color:#9e9e9e'></span><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>rotateXI</span>(points, degree) {</pre></li><li><pre>    <span style='color:#2196f3'>var</span> cosine = Math.<span style='color:#ffeb3b'>cos</span>(degree);</pre></li><li><pre>    <span style='color:#2196f3'>var</span> sine = Math.<span style='color:#ffeb3b'>sin</span>(degree);</pre></li><li><pre>    <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> v <span style='color:#2196f3'>in</span> points) {</pre></li><li><pre>        points[v] = [points[v][<span style='color:#4caf50'>0</span>], cosine*points[v][<span style='color:#4caf50'>1</span>]sine*points[v][<span style='color:#4caf50'>2</span>],</pre></li><li><pre>                     sine*points[v][<span style='color:#4caf50'>1</span>]+cosine*points[v][<span style='color:#4caf50'>2</span>]];</pre></li><li><pre>    }</pre></li><li><pre>}</pre></li><li><pre></pre></li><li><pre><span style='color:#9e9e9e'>// Make in-place changes</span></pre></li><li><pre><span style='color:#9e9e9e'></span><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>rotateX</span>(points, degree) {</pre></li><li><pre>    <span style='color:#2196f3'>var</span> cosine = Math.<span style='color:#ffeb3b'>cos</span>(degree);</pre></li><li><pre>    <span style='color:#2196f3'>var</span> sine = Math.<span style='color:#ffeb3b'>sin</span>(degree);</pre></li><li><pre>    <span style='color:#2196f3'>var</span> x, y, z;</pre></li><li><pre>    <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> v <span style='color:#2196f3'>in</span> points) {</pre></li><li><pre>        x = points[v][<span style='color:#4caf50'>0</span>];</pre></li><li><pre>        y = points[v][<span style='color:#4caf50'>1</span>];</pre></li><li><pre>        z = points[v][<span style='color:#4caf50'>2</span>];</pre></li><li><pre>        points[v][<span style='color:#4caf50'>0</span>] = x;</pre></li><li><pre>        points[v][<span style='color:#4caf50'>1</span>] = cosine*ysine*z;</pre></li><li><pre>        points[v][<span style='color:#4caf50'>2</span>] = sine*y+cosine*z;</pre></li><li><pre>    }</pre></li><li><pre>}</pre></li><li><pre></pre></li><li><pre><span style='color:#9e9e9e'>// Combine rotation matrix X and Y</span></pre></li><li><pre><span style='color:#9e9e9e'></span><span style='color:#2196f3'>function</span> <span style='color:#ffeb3b'>rotateXY</span>(points, x, y) {</pre></li><li><pre>    <span style='color:#2196f3'>var</span> xCosine = Math.<span style='color:#ffeb3b'>cos</span>(x);</pre></li><li><pre>    <span style='color:#2196f3'>var</span> xSine = Math.<span style='color:#ffeb3b'>sin</span>(x);</pre></li><li><pre>    <span style='color:#2196f3'>var</span> yCosine = Math.<span style='color:#ffeb3b'>cos</span>(y);</pre></li><li><pre>    <span style='color:#2196f3'>var</span> ySine = Math.<span style='color:#ffeb3b'>sin</span>(y);</pre></li><li><pre>    <span style='color:#2196f3'>var</span> xSinySin = xSine*ySine;</pre></li><li><pre>    <span style='color:#2196f3'>var</span> xCosySin = ySine*xCosine;</pre></li><li><pre>    <span style='color:#2196f3'>var</span> xSinyCos = xSine*yCosine;</pre></li><li><pre>    <span style='color:#2196f3'>var</span> xCosyCos = xCosine*yCosine;</pre></li><li><pre>    <span style='color:#2196f3'>var</span> x, y, z;</pre></li><li><pre>    <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>var</span> v <span style='color:#2196f3'>in</span> points) {</pre></li><li><pre>        x = points[v][<span style='color:#4caf50'>0</span>];</pre></li><li><pre>        y = points[v][<span style='color:#4caf50'>1</span>];</pre></li><li><pre>        z = points[v][<span style='color:#4caf50'>2</span>];</pre></li><li><pre>        points[v][<span style='color:#4caf50'>0</span>] = yCosine*x + xSinySin*y + xCosySin*z;</pre></li><li><pre>        points[v][<span style='color:#4caf50'>1</span>] = xCosine*y  xSine*z;</pre></li><li><pre>        points[v][<span style='color:#4caf50'>2</span>] = ySine*x + xSinyCos*y + xCosyCos*z;</pre></li><li><pre>    }</pre></li><li><pre>}</pre></li>
+        </ul>
+
+        <p>
+            Test the performance of each of these improvements using the <icode>testPerformance(points)</icode> function, which rotates points by X and Y <icode>100000</icode> times, and the results are:
+        </p>
+        <table style='border:1px solid black;margin:10px 0;'>
+            <thead>
+                <tr><td>Object</td><td>Original</td><td>Global Var</td><td>In-place Update</td><td>Single Matrix</td><td>Browser</td></tr>
+            </thead>
+            <tbody>
+                <tr><td>Sphere with 60 loops</td><td>337.745ms</td><td>18.265ms</td><td>18.255ms</td><td>16.845ms</td><td>Chrome</td></tr>
+                <tr><td>Sphere with 80 loops</td><td>345.185ms</td><td>18.455ms</td><td>18.535ms</td><td>17.315ms</td><td>Chrome</td></tr>
+                <tr><td>Sphere with 100 loops</td><td>331.730ms</td><td>19.330ms</td><td>18.400ms</td><td>17.710ms</td><td>Chrome</td></tr>
+                <tr><td>Sphere with 60 loops</td><td>569ms</td><td>14ms</td><td>14ms</td><td>9ms</td><td>Firefox</td></tr>
+                <tr><td>Sphere with 80 loops</td><td>562ms</td><td>13ms</td><td>14ms</td><td>9ms</td><td>Firefox</td></tr>
+                <tr><td>Sphere with 100 loops</td><td>573ms</td><td>14ms</td><td>15ms</td><td>9ms</td><td>Firefox</td></tr>
+            </tbody>
+        </table>
+
+        <p>
+            Pulling out <icode>Math.cos</icode> and <icode>Math.sin</icode> computations outside the for loop seems to offer the most performance gains. Combining two matrices together seems to offer another small performance improvement.
+        </p>
+        <p>
+            Next, we can improve the <icode>draw()</icode> function by making it asynchronous. We can schedule the function to be called every <icode>(1000ms/60)~16.67ms</icode> instead of every time the mouse drags inside canvas (which can be over 60Hz). Using <icode>setInterval()</icode> and <icode>clearInterval()</icode> when mouse is pressed and released also saves the browser from wasted computations when no updates to the model occurs.
+        </p>
+        <p>
+            Finally, I also made a willful decision on this page to force 3D models with over 1000 vertices to refresh at a maximum of 10Hz. It's somewhat a safety measure against browser freezing.
+        </p>
+
+        <h2>Rotating Cube</h2>
+        <p>
+            All that being said, I still haven't made a rotating cube yet! So here it is. I've added a new camera matrix, which you can read more about <a href='https://en.wikipedia.org/wiki/Camera_matrix'>here</a>, to make it look nice and align with what I imagined at the very beginning when I started. Hope you have a great day!
+        </p>
+        <canvas id='canvas2' width=400 height=400></canvas>
+        <br>
+        <br>
+
+        <h3>Useful Links/References:</h3>
+        <p>
+            <a href='https://en.wikipedia.org/wiki/Rotation_matrix'>Rotation Matrix - Wikipedia</a><br>
+            <a href='https://wblut.com/reading-an-obj-file-in-processing/'>Reading an .obj file in Processing - wblut</a><br>
+            <a href='https://en.wikipedia.org/wiki/Camera_matrix'>Camera Matrix - Wikipedia</a>
+        </p>
+    </div>
+</div>
+
+<!-- Util js -->
+<script src='../files/3DUtils.js'></script>
+<!-- For canvas1 -->
+<script>
+    [points1, edges1] = getCube(200);
+    var canvas1 = document.getElementById('canvas1');
+    var ctx1 = canvas1.getContext('2d');
+    ctx1.fillStyle = '#000000';
+
+    var WIDTH1 = canvas1.width;
+    var HEIGHT1 = canvas1.height;
+    var HAXIS1 = WIDTH1/2;
+    var VAXIS1 = HEIGHT1/2;
+    
+    function draw1() {
+        ctx1.clearRect(0, 0, WIDTH1, HEIGHT1);
+        for(var i in edges1) {
+            var edge1 = edges1[i];
+            var dot1 = [HAXIS1+points1[edge1[0]][0], VAXIS1+points1[edge1[0]][1]];
+            var dot2 = [HAXIS1+points1[edge1[1]][0], VAXIS1+points1[edge1[1]][1]];
+            ctx1.beginPath();
+            ctx1.moveTo(dot1[0], dot1[1]);
+            ctx1.lineTo(dot2[0], dot2[1]);
+            ctx1.stroke();
+        }
+    }
+
+    var rect1 = canvas1.getBoundingClientRect();
+    var mouseDown1 = false;
+    var startX1, startY1;
+    var moveRadian1 = toRadian(0.5);
+    canvas1.onmousedown = function(e) {
+        mouseDown1 = true;
+        startX1 = e.clientX-rect1.left;
+        startY1 = e.clientY-rect1.top;
+    }
+    canvas1.onmousemove = function(e) {
+        if(mouseDown1) {
+            var newX = e.clientX-rect1.left;
+            var newY = e.clientY-rect1.top;
+            rotateY(points1, (startX1-newX)*moveRadian1);
+            rotateX(points1, (newY-startY1)*moveRadian1);
+            startX1 = newX;
+            startY1 = newY;
+            draw1();
+        }
+    }
+    canvas1.onmouseup = function(e) {
+        mouseDown1 = false;
+    }
+    draw1();
+</script>
+<!-- Main demo -->
+<script>
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    ctx.font = "12px Arial";
+    ctx.fillStyle = '#000000';
+
+    var WIDTH = canvas.width;
+    var HEIGHT = canvas.height;
+    var HAXIS = WIDTH/2;
+    var VAXIS = HEIGHT/2;
+    var NORMAL_REFRESH_TIME = 1000/60;
+    var CAPPED_REFRESH_TIME = 1000/10;
+    
+    // Controls
+    showText = false;
+
+    var points, edges;
+
+    // Asynchronous draw object
+    var interval = null;
+
+    function draw() {
+        if(points === null || edges === null) return;
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+        for(var i in edges) {
+            var edge = edges[i];
+            var dot1 = [HAXIS+points[edge[0]][0]*scale, VAXIS+points[edge[0]][1]*scale];
+            var dot2 = [HAXIS+points[edge[1]][0]*scale, VAXIS+points[edge[1]][1]*scale];
+
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.moveTo(dot1[0], dot1[1]);
+            ctx.lineTo(dot2[0], dot2[1]);
+            ctx.stroke();
+
+            if(showText) {
+                ctx.fillText(edge[0], dot1[0], dot1[1]);
+                ctx.fillText(edge[1], dot2[0], dot2[1]);
+            }
+        }
+    }
+</script>
+<script>
+    // Register mouse event
+    var rect = canvas.getBoundingClientRect();
+    var mouseDown = false;
+    var startX, startY;
+    var scale = 1.0;
+    var oneDegreeRadian = toRadian(1);
+    var moveRadian = toRadian(0.5);
+    var moveAmount = 2;
+    var wheelAmount = 0.005;
+    var currRefreshTime = 60;
+    canvas.onmousedown = function(e) {
+        mouseDown = true;
+        startX = e.clientX-rect.left;
+        startY = e.clientY-rect.top;
+
+        if(interval === null) {
+            interval = setInterval(draw, currRefreshTime);
+        }
+    }
+    canvas.onmousemove = function(e) {
+        if(mouseDown) {
+            var newX = e.clientX-rect.left;
+            var newY = e.clientY-rect.top;
+
+            rotateXY(points, (newY-startY)*moveRadian, (startX-newX)*moveRadian);
+
+            startX = newX;
+            startY = newY;
+        }
+    }
+    canvas.onmouseup = function(e) {
+        mouseDown = false;
+
+        if(interval !== null) {
+            clearInterval(interval);
+            interval = null;
+        }
+    }
+    canvas.addEventListener('wheel', function(e) {
+        event.preventDefault();
+        scale += e.deltaY * -wheelAmount;
+
+        if(scale < 0.1) {
+            scale = 0.1;
+        }
+
+        draw();
+    });
+    window.onkeydown = function(e) {
+        switch(e.key) {
+            case 'x':
+                // x, move to negative x direction
+                rotateX(points, -oneDegreeRadian);
+                break;
+            case 'X':
+                // X, move to positive x direction
+                rotateX(points, oneDegreeRadian);
+                break;
+            case 'y':
+                // y, move to negative y direction
+                rotateY(points, -oneDegreeRadian);
+                break;
+            case 'Y':
+                // Y, move to positive y direction
+                rotateY(points, oneDegreeRadian);
+                break;
+            case 'z':
+                // z, move to negative z direction
+                rotateZ(points, -oneDegreeRadian);
+                break;
+            case 'Z':
+                // Z, move to positive z direction
+                rotateZ(points, oneDegreeRadian);
+                break;
+            // Move on a plane
+            case 'ArrowUp':
+                moveY(points, -moveAmount);
+                break;
+            case 'ArrowDown':
+                moveY(points, moveAmount);
+                break;
+            case 'ArrowLeft':
+                moveX(points, -moveAmount);
+                break;
+            case 'ArrowRight':
+                moveX(points, moveAmount);
+                break;
+            default:
+                return;
+        }
+
+        draw();
+    }
+
+    // Register update event
+    var objectInput = document.getElementById('object-select');
+    var sizeInput = document.getElementById('sizeInput');
+    var divInput = document.getElementById('numDivInput');
+    var showTextInput = document.getElementById('showText');
+    var objFileInput = document.getElementById('objfileInput');
+
+    objectInput.onchange = onUpdateControl;
+    sizeInput.onchange = sizeInput.onkeyup = onUpdateControl;
+    divInput.onchange = divInput.onkeyup = onUpdateControl;
+    showTextInput.onchange = updateText;
+    objFileInput.onchange = loadFile;
+
+    function loadFile(event) {
+        var fr = new FileReader(); 
+        var data;
+        fr.onload = function(){ 
+            data = fr.result;
+            [points, edges] = parseObjFile(data);
+            
+            // Safety check # of vertices
+            // if(divInput.value > 300) {
+            //     alert("Number too large, may freeze the browser (please test it locally)");
+            //     divInput.value = 10;
+            // }
+
+            draw();
+
+            // Update fps based on number of vertices
+            if(interval !== null) {
+                clearInterval(interval);
+                interval = null;
+            }
+            if(Object.keys(points).length > 1000) {
+                // Capped at 10Hz
+                currRefreshTime = CAPPED_REFRESH_TIME;
+            } else {
+                currRefreshTime = NORMAL_REFRESH_TIME;
+            }
+            interval = setInterval(draw, currRefreshTime);
+        }
+        fr.readAsText(event.target.files[0]);
+    }
+
+    function updateText() {
+        // Update showtext
+        showText = showTextInput.checked;
+        draw();
+    }
+
+    onUpdateControl();
+    // Stop redraw on startup
+    clearInterval(interval);
+    interval = null;
+
+    function onUpdateControl() {
+        // Safety check # of vertices
+        // if(divInput.value > 300) {
+        //     alert("Number too large, may freeze the browser (please test it locally)");
+        //     divInput.value = 10;
+        // }
+
+        // Check empty
+        if(sizeInput.value.trim() === '' || divInput.value.trim() === '') return;
+
+        // Update object
+        if(objectInput.value === 'cube') [points, edges] = getCube(sizeInput.value);
+        else if(objectInput.value === 'sphere') [points, edges] = getSphere(sizeInput.value, divInput.value);
+        else if(objectInput.value === 'tetra') [points, edges] = getTetrahedron(sizeInput.value);
+
+        // Update scale
+        scale = 1.0;
+
+        // Update fps based on number of vertices
+        if(interval !== null) {
+            clearInterval(interval);
+            interval = null;
+        }
+        if(Object.keys(points).length > 1000) {
+            // Capped at 10Hz
+            currRefreshTime = CAPPED_REFRESH_TIME;
+        } else {
+            currRefreshTime = NORMAL_REFRESH_TIME;
+        }
+
+        draw();
+    }
+</script>
+<!-- Final rotating cube -->
+<script>
+    var canvas2 = document.getElementById('canvas2');
+    var ctx2 = canvas2.getContext('2d');
+    ctx2.fillStyle = '#000000';
+    ctx2.strokeStyle = '#ffffff';
+
+    var WIDTH2 = canvas2.width;
+    var HEIGHT2 = canvas2.height;
+    var HAXIS2 = WIDTH2/2;
+    var VAXIS2 = HEIGHT2/2;
+
+    [points2, edges2] = getCube(150);
+
+    var f = 250;
+
+    function draw2() {
+        ctx2.fillRect(0, 0, WIDTH, HEIGHT);
+
+        for(var i in edges2) {
+            var edge = edges2[i];
+
+            // Perspective camera view
+            var dot1 = [HAXIS2+points2[edge[0]][0]*f/(f-points2[edge[0]][2]), VAXIS2+points2[edge[0]][1]*f/(f-points2[edge[0]][2])];
+            var dot2 = [HAXIS2+points2[edge[1]][0]*f/(f-points2[edge[1]][2]), VAXIS2+points2[edge[1]][1]*f/(f-points2[edge[1]][2])];
+
+            ctx2.beginPath();
+            ctx2.moveTo(dot1[0], dot1[1]);
+            ctx2.lineTo(dot2[0], dot2[1]);
+            ctx2.stroke();
+        }
+    }
+
+    setInterval(function() {
+        rotateY(points2, oneDegreeRadian);
+        draw2();
+    }, 60);
+</script>

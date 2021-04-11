@@ -1,0 +1,192 @@
+<!-- As those who took Cognitive Science class may know, people have two ways of doing visual search - seriel and parallel processing. -->
+<!-- study-notes -->
+<style>
+    #toggle-button{
+        background-color:black;display:inline-block;margin:0 auto; color:white; padding:5px 10px;border-radius:5px;
+    }
+    #toggle-button:hover {
+        cursor: pointer;
+    }
+    #code-input, #html-display {
+        width:100%; height: 600px; font-size: inherit;padding:10px;background-color:black;color:white;font-family:"Courier New", Courier, monospace;
+    }
+    #result-button {
+        width:100%;display:inline-block;text-align:center;background-color:black;border-radius:5px;color:white;margin: 5px auto 0;
+    }
+    #code-display {
+        width:100%;font-size:inherit;padding:10px;background-color:black;color:white;font-family:"Courier New", Courier, monospace;display:block;line-height:1.2em;box-sizing:border-box;min-height:100px;
+    }
+    #code-display > span {
+        font-family:"Courier New", Courier, monospace;
+    }
+    #copy-button {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        color: white;
+    }
+    #copy-button:hover {
+        cursor: pointer;
+    }
+</style>
+<div id='content-wrapper'>
+    <div id='content'>
+        <h1>Write A Simple Syntax Highlighter</h1>
+        <p id='content-date'>Feb. 5, 2021, 16:20:50</p>
+
+        <p>
+            As those who took Cognitive Science class may know, people have two ways of doing visual search - <b>seriel</b> and <b>parallel</b> processing.
+        </p>
+        <p>
+            <b>Parallel</b> visual processing enables fast detection and processing of information while <b>serial</b> processing slows our thoughts.
+        </p>
+        <p>
+            As an example, finding a red dot among a collection of black dots is very easy compared to finding the same red dot among a collection of red rounded-corner squares.
+            <div class='img-txt'>
+                <img src='../imgs/Highlighter-1.png'>
+                <h3>Find the red dots</h3>
+            </div>
+        </p>
+
+        <p>
+            The black-red contrast in the first image immediately caught your eye and forced you to look at the red dot first. Therefore, it's faster to find the red dot in it. In the second image, however, there's no color clues, so one most likely had to search through all shapes in a serial fashion until finding the dot.
+        </p>
+        <p>
+            We observe the same information processing speed differences when reading and writing code. Code that has been highlighted is often much easier to read and understand comapred to code that is monochromatic. As a simple example,
+        </p>
+        <p>
+            <ul class='ccode' id='no-highlight'>
+                <li><pre>import java.util.Arrays;</pre></li>
+                <li><pre></pre></li>
+                <li><pre>public class Main {</pre></li>
+                <li><pre>    public static void main(String[] args) {</pre></li>
+                <li><pre>        System.out.println("Starting program...");</pre></li>
+                <li><pre></pre></li>
+                <li><pre>        // Initialize array 0-9</pre></li>
+                <li><pre>        int[] numbers = new int[10];</pre></li>
+                <li><pre>        for(int i = 0; i &lt; numbers.length; i++) numbers[i] = i;</pre></li>
+                <li><pre></pre></li>
+                <li><pre>        // Print out squares</pre></li>
+                <li><pre>        Arrays.stream(numbers).forEach(e -&gt; System.out.println(e*e));</pre></li>
+                <li><pre></pre></li>
+                <li><pre>        System.out.println("Program exit");</pre></li>
+                <li><pre>    }</pre></li>
+                <li><pre>}</pre></li>
+            </ul>
+
+            <ul class='ccode' id='with-highlight' style='display:none;'>
+                <li><pre><span style='color:#2196f3'>import</span> java.util.Arrays;</pre></li>
+                <li><pre></pre></li>
+                <li><pre><span style='color:#2196f3'>public</span> <span style='color:#2196f3'>class</span> Main {</pre></li>
+                <li><pre>    <span style='color:#2196f3'>public</span> <span style='color:#2196f3'>static</span> <span style='color:#2196f3'>void</span> <span style='color:#ffeb3b'>main</span>(String[] args) {</pre></li>
+                <li><pre>        System.out.<span style='color:#ffeb3b'>println</span>(<span style='color:#d8721a'>"Starting program..."</span>);</pre></li>
+                <li><pre></pre></li>
+                <li><pre>        <span style='color:#9e9e9e'>// Initialize array 0-9</span></pre></li>
+                <li><pre><span style='color:#9e9e9e'></span>        <span style='color:#2196f3'>int</span>[] numbers = <span style='color:#2196f3'>new</span> <span style='color:#2196f3'>int</span>[<span style='color:#4caf50'>10</span>];</pre></li>
+                <li><pre>        <span style='color:#2196f3'>for</span>(<span style='color:#2196f3'>int</span> i = <span style='color:#4caf50'>0</span>; i &lt; numbers.length; i++) numbers[i] = i;</pre></li>
+                <li><pre></pre></li>
+                <li><pre>        <span style='color:#9e9e9e'>// Print out squares</span></pre></li>
+                <li><pre><span style='color:#9e9e9e'></span>        Arrays.<span style='color:#ffeb3b'>stream</span>(numbers).<span style='color:#ffeb3b'>forEach</span>(e -&gt;<span style='color:#DAF7A6 '></span> System.out.<span style='color:#ffeb3b'>println</span>(e*e));</pre></li>
+                <li><pre></pre></li>
+                <li><pre>        System.out.<span style='color:#ffeb3b'>println</span>(<span style='color:#d8721a'>"Program exit"</span>);</pre></li>
+                <li><pre>    }</pre></li>
+                <li><pre>}</pre></li>
+            </ul>
+
+            <div onclick='toggleHighlight()' id='toggle-button'>Toggle Highlight</div>
+        </p>
+        <p>
+            With syntax highlighting, this piece code is more readable and livelier.
+        </p>
+
+        <h2>How I Implemented My Syntax Highlighter</h2>
+        <p>
+            According to StackOverflow posts like <a href='https://stackoverflow.com/questions/809423/writing-a-syntax-highlighter'>this</a>, there are generally two ways to implement a syntax highlighter.
+        </p>
+        <p>
+            The first approach is to implement a full-fledged parser for a programming language that I want to highlight. This approach is imaginablly very hard. The second simpler approach is to write a program that identifies language keywords and style them with <icode>&lt;span&gt;</icode> tag. So, I took this approach instead.
+        </p>
+        <p>
+            Although this post also suggestes a way to identify keywords by using regex pattern matching, I took a more intuitive approach. I chose to style the code in a streamlined fashion.
+        </p>
+        <p>
+            Everytime a deliminator is encountered (ie. ".", ";", "/", etc), the program will check the character sequence immediately following the deliminator to see if that sequence, together with the deliminator, makes up of a valid part of the code that need to be highlighted.
+        </p>
+        <p>
+            For example, whenever the highlighter encounters a <icode>/</icode>, it will check the character immediately after. If that character is also a <icode>/</icode>, then the program recognizes a comment that should span to the next end of line character <icode>\n</icode> that needs to be styled. So the program will wrap everything between the double slash and the next new line character in a <icode>&lt;span&gt;</icode> with specific color.
+        </p>
+        <p>
+            In the case of function call (<icode>.println()</icode>) and pointer deference (<icode>->next_ptr</icode>), the check sequence is longer than 1 byte (until the next deliminator). To be more precice, function calls must be of format <icode>\.[a-zA-Z0-9_]+\(</icode> and pointer deference must have format <icode>->[a-zA-Z0-9_]+</icode> as I don't want to highlight code segments like <icode>System.out.</icode> and <icode>(e) -> e++;</icode>.
+        </p>
+        <p>
+            Overall, this highlighter works as I expected. It's certainly not intelligent or fancy in anyway, but it works well for my blog. The code is not too long but a little messy with all the <icode>i++</icode> and <icode>i--</icode> statements to move the current cursor left or right.
+        </p>
+
+        <h2>Demo</h2>
+        <p>
+            Feel free to try it out or modify the code if you like. Code can be found <a href='../Util/HighLighter.js'>here</a>.
+        </p>
+
+        <div>
+            <div>
+                <input type="checkbox" id="usedForBlog" name="usedForBlog" checked>
+                <label for="usedForBlog">Use For Blog</label>
+            </div>
+            <textarea id="code-input"></textarea>
+            <div style='position: relative;'>
+                <p style='background-color:black;color:white;margin:0;padding-left:10px;font-family:monospace;'>Output:</p>
+                <pre id='code-display'></pre>
+                <i class="fas fa-copy" id='copy-button'></i>
+            </div>
+            <!-- Store hightlighted code data -->
+            <input style='display:none;' id='cached-code'></input>
+        </div>
+
+        <h3>Useful Links/References:</h3>
+        <p>
+            <a href="https://stackoverflow.com/questions/809423/writing-a-syntax-highlighter">How to implement a syntax highLighter - StackOverflow</a><br>
+            <a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Interact_with_the_clipboard">Clipboard API - MDN</a><br>
+        </p>
+    </div>
+</div>
+
+<script src='../files/HighLighter.js'></script>
+<script>
+    var noHighlight = document.getElementById("no-highlight");
+    var withHighlight = document.getElementById("with-highlight");
+    function toggleHighlight() {
+        if(noHighlight.style.display == "none") {
+            noHighlight.style.display = "block";
+            withHighlight.style.display = "none";
+        } else {
+            withHighlight.style.display = "block";
+            noHighlight.style.display = "none";
+        }
+    }
+
+    var code = document.getElementById("code-input");
+    var codeDisplay = document.getElementById("code-display");
+    var copyButton = document.getElementById("copy-button");
+    var codeData = document.getElementById("cached-code");
+    var usedForBlog = document.getElementById("usedForBlog");
+    var data = '';
+    function highlightCode() {
+        data = highlight(code.value, usedForBlog.checked);
+        codeData.value = data;
+        codeDisplay.innerHTML = data;
+    };
+
+    copyButton.onclick = () => {
+        navigator.permissions.query({name: "clipboard-write"}).then(result => {
+            if (result.state == "granted" || result.state == "prompt") {
+                navigator.clipboard.writeText(codeData.value);
+            } else {
+                console.log("Clipboard access failed");
+            }
+        });
+    };
+
+    code.onchange = highlightCode;
+    code.onkeyup = highlightCode;
+    code.onpaste = highlightCode;
+</script>

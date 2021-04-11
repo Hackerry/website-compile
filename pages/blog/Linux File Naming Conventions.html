@@ -1,0 +1,185 @@
+<!-- I made a heartless mistake. That mistake was so dumb, yet it totally got me off-guard, and I had to pay the price of my carelessness. -->
+<!-- study-notes -->
+<div id='content-wrapper'>
+    <div id='content'>
+        <h1>Linux File Naming Conventions</h1>
+        <p id='content-date'>Oct. 31, 2020, 16:19:51</p>
+
+        <div class='iterm'>
+            <span>$ rm -rf ~</span><br>
+            <span>$ </span><br>
+            <span>$ # Uhm...</span><br>
+            <span class='blink-cursor'>$ yes "no!!!!!!!!!!!!!!!"</span><br>
+        </div>
+
+        <p>
+            I made a heartless mistake. That mistake was so dumb, yet it totally got me off-guard, and I had to pay the price of my carelessness.
+        </p>
+
+        <p>
+            I executed a <icode>rm -rf ~</icode> command...
+        </p>
+        <br class='dots'>
+
+        <p>
+            Let me make my execuse first :^). I'd never run such a command on its own, knowing what it does. However, the reason I ran the command the other day was that a directory named <icode>~</icode> was created in my working directory due to some malformatted commands I ran previously.
+        </p>
+        <p>
+            I admit I was being careless, as I thought "well that's easy, let me delete it with <icode>rm -rf ~</icode>". So I hit enter and went on with my work, without even realizing what I had done for the next half an hour. I only realized my mistake when I failed to ssh back into that machine, since the <icode>~/.ssh </icode> folder must have been deleted as well. Ugh.
+        </p>
+
+        <p>
+            This incident clearly showed how careless I was, but more importantly, how little I knew about the Linux file naming convetions. If I had known that creating a directory named <icode>~</icode> is possible, I would definitely pay more attention when interacting with such "special" directories in bash.
+        </p>
+
+        <h2>Failed Source Code Hunt</h2>
+        <p>
+            I originally thought there would be no better way to understand Linux file system's (Ext4's) naming conventions by finding the piece of kernel code that does pathname validation.
+        </p>
+        <p>
+            After all, the real Linux source code must be the most reliable source of information for such a thing.
+        </p>
+        <p>
+            Sadly though, after some hunt and researching, I found it was impossible.
+        </p>
+        <br class='dots'>
+
+        <p>
+            I started my search by looking into source code of common bash utility commands (ie. touch, cat) and then syscalls (ie. open) that take literal file names as arguments to see how they validate their arguments.
+        </p>
+        <p>
+            Although I came across some interesting structs like <icode>struct path</icode> (<a href='https://github.com/torvalds/linux/blob/master/include/linux/path.h#L8-L11'>source</a>) and <icode>struct filename</icode> (<a href='https://github.com/torvalds/linux/blob/master/include/linux/fs.h#L2497-L2503'>source</a>), I couldn't find the link that connects literal filename strings to those structs.
+        </p>
+        <p>
+            Then I came across a function in <icode>linux/fs.h</icode> - <icode>struct filename * getname_kernel(const char * filename)</icode> (<a href='https://github.com/torvalds/linux/blob/master/fs/namei.c#L212'>source</a>), which suddenly made me realize maybe the filenames are resolved in hardware instead of software.
+        </p>
+        <br class='dots'>
+
+        <p>
+            It turns out, the real story is more complicated. According to these two posts (<a href='https://www.win.tue.nl/~aeb/linux/vfs/trail-2.html'>post1</a>, <a href='https://stackoverflow.com/a/34102855'>post2</a>), there's no such thing as path validation per se. Hardware only does one thing and one thing only, that is to search for a file when given the file path of that file. The process of searching a file is as following:
+        </p>
+        <ol>
+            <li>Get filename string</li>
+            <li>Construct structs and copy them from user space to kernel space</li>
+            <li>Hardware starts from the root directory inode and "walks" along inode links to search for the file</li>
+            <li>If file exists in the destination inode, then signal found; otherwise, signal not found</li>
+        </ol>
+
+        <br>
+        <p>
+            So, given a certain path like <icode>"/home/usr/bin/noexist"</icode>, there aren't any written code checks on the validity of the path string.
+        </p>
+        <p>
+            Bad paths are just bad because there is at least one invalid inode link along the searching path. In this case, a null pointer given by searching the <icode>bin</icode> inode for <icode>noexist</icode> will fail and give an error, which indicates file not found caused by either invalid path or indeed no such file exists.
+        </p>
+
+        <h2>Test and See</h2>
+        <p>
+            Well, that's a clever implementation for doing path checking. It saves a ton of kernel code should one chooses to implement it instead at kernel level.
+        </p>
+        <p>
+            However, it also leads us nowhere on our attempt to understand Linux file naming conventions.
+        </p>
+        <p>
+            I guess the best way we can do now is to test and see (following tests were run on Ubuntu).
+        </p>
+        <br class='dots'>
+
+        <p>
+            First, let's test filenames that use special characters:
+        </p>
+        <div class='iterm'>
+            <span>$ touch '/'</span><br>
+            <span>touch: setting times of '/': Permission denied</span><br>
+            <span>$ touch '.'</span><br>
+            <span>$ touch '..'</span><br>
+            <span>$ touch '~'</span><br>
+            <span>$ touch '\'</span><br>
+            <span>$ touch '*'</span><br>
+            <span>$ touch '_'</span><br>
+            <span>$ touch '-'</span><br>
+            <span>$ touch '&lt;'</span><br>
+            <span>$ touch '|'</span><br>
+            <span>$ touch '$'</span><br>
+            <span>$ touch ''</span><br>
+            <span>touch: cannot touch '': No such file or directory</span><br>
+            <span>$ </span><br>
+            <span>$ ls -a</span><br>
+            <span>'*' . .. '&lt;' '\' _ '|' '$' '~'</span><br>
+            <span>$ </span><br>
+            <span>$ echo hello > '-'</span><br>
+            <span>$ ls -a</span><br>
+            <span>'*' - . .. '&lt;' '\' _ '|' '$' '~'</span><br>
+        </div>
+        <p>
+            Although we can create files with certain special names, they are quoted in single quotes in a call to <icode>ls</icode>, which are good reminders that escaping is needed when referring to those files.
+        </p>
+        <p>
+            Also, we see that <icode>'.', '..', '/'</icode> cannot be used as filenames even when they are escaped, because they are reserved file paths pointing to the current directory, parent directory and the root directory.
+        </p>
+        <p>
+            One interesting discovery is that, while <icode>'-'</icode> is a valid name for a file (as shown in the final <icode>ls</icode>), <icode>touch</icode> fails to create it. Looking into <icode>touch</icode>'s source code reveals that <icode>'-'</icode> is a special filepath in <icode>touch</icode> that represents <icode>stdout</icode> (<a href='https://github.com/coreutils/coreutils/blob/master/src/touch.c#L130'>source</a>).
+        </p>
+        <p>
+            The empty string is understandablly not a valid filename. Or more precisely, just an ending null byte <icode>\x00</icode> is not a valid file name.
+        </p>
+        <br class='dots'>
+
+        <p>
+            Now for some not so common filenames:
+        </p>
+        <div class='iterm'>
+            <span>$ touch `printf '\xf0\x9f\x98\x8a'`</span><br>
+            <span>$ ls</span><br>
+            <span>😊</span><br>
+            <span>$ </span><br>
+            <span>$ touch `printf 'hello\r'`</span><br>
+            <span>$ ls</span><br>
+            <span>'hello'$'\r'</span><br>
+            <span>$ ls hello^M</span><br>
+            <span>$ #      ^I used tab completion here</span><br>
+            <span>$ </span><br>
+            <span>$ touch `printf 'hello\rbye'`</span><br>
+            <span>$ ls</span><br>
+            <span>'hello'$'\r''bye'</span><br>
+        </div>
+        <p>
+            It seems utf-8 characters and ASCII control sequences are also valid filenames.
+        </p>
+
+        <h2>What the Real Specification Says</h2>
+        <p>
+            According to <a href='https://en.wikipedia.org/wiki/Ext4'>Ext4's Wikipedia page</a>, other than the <icode>'\x00'</icode> null byte, <icode>'/'</icode> file path deliminator, and <icode>'.', '..'</icode> which are reserved directory paths, all other bytes are allowed in a filename. This confirms our previous testing results.
+        </p>
+        <p>
+            We also learn from the Wiki page that the longest filename length is 255 bytes. This piece of information can also be found on Ubuntu in the kernel file <icode>/usr/src/linux-headers-X.X.X.XX-xx/include/linux/limits.h</icode>.
+        </p>
+
+        <h2>Summary and Tips</h2>
+        <p>
+            Some useful tips and best practices when dealing with "special" files in Linux:
+        </p>
+        <ol>
+            <li>Special characters in a filename need to be escaped or single-quoted to avoid automatic shell expansion</li>
+            <li>Better run <icode>ls</icode>, <icode>file</icode> or <icode>pwd</icode> first before running <icode>rm</icode> on files with "not-so-regular" names to make sure filenames are correctly escaped</li>
+            <li>When referring to files that contain control sequences (ie. shown as <icode>'^X'</icode>), either use tab completion, or search for the specfic hex code of that control sequence with <icode>man ascii</icode> and then use <icode>printf</icode> like so to refer to them: <icode>rm `printf 'file\x13'`</icode></li>
+            <li><b>Update:</b> To refer to file name start with '-' (ie. rm, ls, etc), use '--' to escape. For example, <icode>rm -- -g</icode> (for detail please consult <icode>man</icode> page).</li>
+        </ol>
+        <br>
+
+        <p>
+            Finally, I hope I can avoid making the same mistake again.
+        </p>
+
+        <h3>Useful Links/References:</h3>
+        <p>
+            <a href='https://css-tricks.com/snippets/css/typewriter-effect/'>Typewritter effect CSS</a><br>
+            <a href='https://www.win.tue.nl/~aeb/linux/vfs/trail-2.html'>open() syscall trace</a><br>
+            <a href='https://stackoverflow.com/a/34102855'>Stackoverflow answer on what it means to do path validation</a><br>
+            <a href='https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/'>Linux Directory Naming Conventions</a><br>
+            <a href='https://en.wikipedia.org/wiki/Ext4'>Ext4 Wikipedia page</a><br>
+            <a href='https://github.com/coreutils/coreutils'>Coreutil Source code</a><br>
+            <a href='https://github.com/torvalds/linux'>Linux Kernel Source code</a><br>
+        </p>
+    </div>
+</div>

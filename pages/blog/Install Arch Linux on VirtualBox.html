@@ -1,0 +1,315 @@
+<!-- People say Arch Linux is the ultimate Linux Distro for geeks. It's very customizable and has detailed Wiki page on everything. However, it's also very tricky to setup compared to Ubuntu which basically works out-of-the-box. -->
+<!-- study-notes -->
+<div id='content-wrapper'>
+    <div id='content'>
+        <h1>Install Arch Linux on VirtualBox</h1>
+        <p id='content-date'>Jan. 17, 2021, 20:48:50</p>
+
+        <p>
+            People say Arch Linux is the ultimate Linux Distro for geeks.
+        </p>
+        <p>
+            It's very customizable and has detailed Wiki page on everything. However, it's also very tricky to setup compared to Ubuntu which basically works out-of-the-box.
+        </p>
+        <p>
+            So I want to document my successful setup of Arch Linux in Virtual Box booted with BIOS and GRUB here, as a reminder for myself and a guide for those who want to do the same setup.
+        </p>
+
+        <div class="img-txt-small">
+            <img src='../imgs/Arch-0.png'>
+        </div>
+
+        <h2>Create VM</h2>
+        <ol>
+            <li>
+                Download Arch iso image from here: <a href='https://archlinux.org/download/'>Download</a>
+            </li>
+            <li>
+                Open VirtualBox and click "<b>New</b>". Then select OS type as Arch 64 bit. I just keep everything else as default for now.
+                <div class='img-txt-small'>
+                    <img src='../imgs/Arch-1.png'>
+                </div>
+            </li>
+            <li>
+                Once the VM is built, click "<b>Start</b>" to boot the machine. Select the downloaded iso image as the startup disk.
+            </li>
+            <li>
+                Press "<b>Enter</b>" to select boot from medium or do nothing and wait for the timer to run out.
+                <div class='img-txt'>
+                    <img src='../imgs/Arch-2.png'>
+                </div>
+            </li>
+            <li>
+                Greeting from the terminal! The ISO image is successfully loaded.
+                <div class='img-txt'>
+                    <img src='../imgs/Arch-3.png'>
+                </div>
+            </li>
+        </ol>
+
+        <p>
+            Now I must follow the official tutorial here: <a href='https://wiki.archlinux.org/index.php/installation_guide'>Tutorial</a>. The following steps are directly taken from this tutorial (with modifications).
+        </p>
+
+        <h2>Firmware Setup</h2>
+        <ol>
+            <li>
+                <b>Note</b>: I'm booting with BIOS, so the directory <icode>/sys/firmware/efi</icode> is missing.
+            </li>
+            <li>
+                After checking network connections, I need to enable time syncing with ntp servers.
+                <div class='iterm'>
+                    # Check network connection<br>
+                    ip link<br>
+                    ping archlinux.org<br>
+                    <br>
+                    # Enable time-syncing<br>
+                    timedatectl set-ntp true<br>
+                    # Check syncing status<br>
+                    timedatectl status<br>
+                </div>
+            </li>
+            <li>
+                The next step is to partition the disk. The default storage space for this VM is 8GB. Based on an <a href='https://wiki.archlinux.org/index.php/installation_guide#Example_layouts'>example</a> given in the tutorial, I can assign 1GB for the swap partition and leaving the rest (7GB) as regular storage. A detailed <a href='https://tldp.org/HOWTO/Partition/fdisk_partitioning.html'>example</a> of partitioning with <icode>fdisk</icode>.
+
+                <div class='iterm'>
+                    # Check storage name<br>
+                    fdisk -l<br>
+                    <br>
+                    # Partition disk<br>
+                    fdisk /dev/sda<br>
+                </div>
+
+                <div class='img-txt'>
+                    <img src='../imgs/Arch-4.png'>
+                    <h3>Example creating one 1GB primary partition</h3>
+                </div>
+            </li>
+            <li>
+                The final partitioning looks like this:
+                <div class='img-txt'>
+                    <img src='../imgs/Arch-5.png'>
+                </div>
+            </li>
+            <li>
+                Next, I need to format disk with:
+                <div class='iterm'>
+                    mkswap /dev/sda1     # Swap partition 1G<br>
+                    mkfs.ext4 /dev/sda2  # Storage partition 7G<br>
+                </div>
+            </li>
+            <li>
+                Then I mount the volume I just partitioned for the software installation steps next. Also, I should enable swap partition.
+                <div class='iterm'>
+                    # Mount storage volume<br>
+                    mount /dev/sda2 /mnt<br>
+                    <br>
+                    # Enable swap<br>
+                    swapon /dev/sda1<br>
+                    <br>
+                    # Check partitions are correct<br>
+                    lsblk<br>
+                </div>
+
+                <div class='img-txt'>
+                    <img src='../imgs/Arch-6.png'>
+                    <h3>Mounted Paths</h3>
+                </div>
+            </li>
+        </ol>
+
+        <h2>Software Installation</h2>
+        <ol>
+            <li>
+                I need to install linux kernel and other softwares. It's better to install utility tools like <icode>vim</icode>, <icode>man-db</icode>, <icode>man-pages</icode> and <icode>texinfo</icode> at this stage.
+                <div class="iterm">
+                    pacstrap /mnt base linux linux-firmware vim man-db man-pages texinfo
+                </div>
+            </li>
+            <li>
+                Next I should generate the disk partition tags info for future mounts.
+
+                <div class="iterm">
+                    genfstab -U /mnt >> /mnt/etc/fstab
+                </div>
+
+                <div class='img-txt'>
+                    <img src='../imgs/Arch-7.png'>
+                    <h3>Generated fstab file example</h3>
+                </div>
+            </li>
+            <li>
+                Change to the new system root user and enter the user space.
+                <div class="iterm">
+                    arch-chroot /mnt
+                </div>
+            </li>
+            <li>
+                Initialize and sync time with hardware.
+                <div class="iterm">
+                    # Create symbolic link to point localtime to US-pacific time<br>
+                    ln -sf /usr/share/US/Pacific /etc/localtime<br>
+                    <br>
+                    # Sync with hardware<br>
+                    hwclock --systohc<br>
+                </div>
+            </li>
+            <li>
+                Next edit <icode>/etc/locale.gen</icode> file and uncomment the line <icode>en_US.UTF-8</icode>.<br>
+                Create <icode>/etc/locale.conf</icode> and add the line <icode>LANG=en_US.UTF-8</icode>.
+                <div class="iterm">
+                    # Uncomment line in /etc/locale.gen<br>
+                    sed -i 's/#en_US.UTF-8/en_US.UTF-8/g' /etc/locale.gen
+                    <br>
+                    # Generate locale<br>
+                    locale-gen<br>
+                    <br>
+                    # Create /etc/locale.conf<br>
+                    echo 'LANG=en_US.UTF-8' > /etc/locale.conf<br>
+                </div>
+            </li>
+            <li>
+                Set the VM hostname and list known hosts in <icode>/etc/hosts</icode>.
+                <div class='iterm'>
+                    # Set hostname<br>
+                    echo 'HackerryArchDemo' > /etc/hostname<br>
+                    <br>
+                    # List known hosts<br>
+                    # --------------------<br>
+                    # In /etc/hosts:<br>
+                    # <br>
+                    # 127.0.0.1 localhost<br>
+                    # ::1       localhost<br>
+                    # 127.0.1.1 HackerryArchDemo.localdomain HackerryArchDemo<br>
+                    # --------------------<br>
+                </div>
+            </li>
+            <li>
+                Change the root password with <icode>passwd</icode>.
+            </li>
+        </ol>
+
+        <h2>Bootloader Installation</h2>
+        <p>
+            The following steps are taken dicretly from <a href='https://wiki.archlinux.org/index.php/GRUB#Master_Boot_Record_(MBR)_specific_instructions'>this Wiki</a>.
+        </p>
+        <ol>
+            <li>
+                Since I'm booting with BIOS, I'll install GRUB bootloader. Pick suitable bootloaders from <a href='https://wiki.archlinux.org/index.php/Arch_boot_process#Boot_loader'>here</a>.
+            </li>
+            <li>
+                <b>Note</b>: During the partitioning step, <icode>fdisk</icode> has already left 1MB space at the front of the disk. So I can just install grub and generate the configuration file.
+                <div class="iterm">
+                    # Install grub<br>
+                    pacman -S grub<br>
+                    grub-install --target=i386-pc /dev/sda<br>
+                    <br>
+                    # Generate configuration file<br>
+                    grub-mkconfig -o /boot/grub/grub.cfg<br>
+                </div>
+            </li>
+            <li>
+                Now with everything done, I can do <icode>exit</icode> and <icode>shutdown -h now</icode>.
+            </li>
+        </ol>
+
+        <h2>Tweaks & GUI</h2>
+        <ol>
+            <li>
+                Eject the iso image disk from VirtualBox by click <b>Settings > Storage</b> and the icon with a disk and a triangle on the right.
+                <div class='img-txt-small'>
+                    <img src='../imgs/Arch-8.png'>
+                </div>
+            </li>
+            <li>
+                Now start the VM and I'm greeted by the Arch Linux OS.<br>
+                I can login as <icode>root</icode> with the password I set earlier.
+                <div class='img-txt'>
+                    <img src='../imgs/Arch-9.png'>
+                </div>
+            </li>
+            <li>
+                There are some network configurations to be done at this point. The default network manager is <icode>systemd-networkd</icode> in the base package. It is, however, disabled by default. I need to enable them to connect to the internet. To read more <a href='https://wiki.archlinux.org/index.php/Systemd-networkd#Required_services_and_setup'>here</a>.
+                <div class="iterm">
+                    # Enable network manager services
+                    systemctl enable systemd-networkd.service
+                    systemctl enable systemd-resolved.service
+                </div>
+            </li>
+            <li>
+                Next, I need to configure the VM's network interface to use DHCP to get dynamic ip addresses by writing to <icode>/etc/systemd/network/20-wired.network</icode> file.<br>
+                The configurations are different for different connection types (read more from the link in the previous step).
+                <div class='iterm'>
+                    # In this case, my network is wired.<br>
+                    # Check connection type and network interface name with "ip link".<br>
+                    # <br>
+                    # ----------------------------------<br>
+                    # In /etc/systemd/network/20-wired.network:<br>
+                    # <br>
+                    # [Match]<br>
+                    # Name=enp1s0 # &lt;- Network interface name<br>
+                    #<br>
+                    # [Network]<br>
+                    # DHCP=yes<br>
+                    # ----------------------------------<br>
+                    # <br>
+                    # Restart network manager<br>
+                    systemctl restart systemd-networkd.service<br>
+                    systemctl restart systemd-resolved.service<br>
+                    <br>
+                    # Check status<br>
+                    systemctl status systemd-networkd.service<br>
+                    systemctl status systemd-resolved.service<br>
+                    <br>
+                    # Check network connection<br>
+                    ping archlinux.org<br>
+                </div>
+            </li>
+            <li>
+                Install the basic GNOME GUI with <icode>xorg</icode> and <icode>gnome</icode> pacakges.
+                <div class='iterm'>
+                    # Install packages<br>
+                    pacman -S xorg<br>
+                    pacman -S gnome<br>
+                    <br>
+                    # Run GUI to see if the packages are installed correctly
+                    systemctl start gdm.service
+                </div>
+            </li>
+            <li>
+                Restart machine and enable GUI service at startup time.
+                <div class='iterm'>
+                    systemctl enable gdm.service<br>
+                    <br>
+                    # Reboot machine to see the effect<br>
+                    reboot<br>
+                </div>
+            </li>
+            <li>
+                <b>Note</b>: It's better to give the VM more graphic RAM by going to <b>Settings > Display</b>.
+            </li>
+            <li>
+                <b>Note</b>: If something goes wrong here and the machine tries to boot with GUI but fails, press 'E' when prompted to select boot method (as in Figure 1).<br>
+                Add the number <icode>3</icode> at the end of the line with <icode>linux</icode> command and press <icode>Ctrl-X</icode> to boot into root terminal again (as in Figure 2).
+
+                <div class='img-txt'>
+                    <img src='../imgs/Arch-10.png'>
+                    <h3>Figure 1</h3>
+                </div>
+                <div class='img-txt'>
+                    <img src='../imgs/Arch-11.png'>
+                    <h3>Figure 2</h3>
+                </div>
+            </li>
+        </ol>
+
+        <h3>Tada! An Arch Linux machine is installed on VirtualBox!</h3>
+
+        <h3>Useful Links/References:</h3>
+        <p>
+            <a href="https://tldp.org/HOWTO/Partition/fdisk_partitioning.html">Disk partioning with fdisk</a><br>
+            <a href="https://itsfoss.com/install-arch-linux/">Install Arch Linux with UEFI boot mode</a><br>
+            <a href="http://www.linuxandubuntu.com/home/how-to-boot-into-linux-command-line">Boot into Linux Command Line with GRUB</a><br>
+        </p>
+    </div>
+</div>
