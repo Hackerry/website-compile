@@ -189,7 +189,7 @@ func generateIndexPage(posts []Post) {
 	// Nav-bar section
 	w.WriteString("\n\n<!-- Auto-generated navbar -->\n")
 	tmpl = template.Must(template.ParseFiles(filepath.Join(ComponentPath, "navbar.html")))
-	tmpl.Execute(w, nil)
+	tmpl.Execute(w, indexData)
 
 	// Copied index section
 	w.WriteString("\n\n<!-- Copied body -->\n")
@@ -304,7 +304,7 @@ func generateBlogPages() []Post {
 		// Nav-bar section
 		w.WriteString("\n\n<!-- Auto-generated navbar -->\n")
 		tmpl = template.Must(template.ParseFiles(filepath.Join(ComponentPath, "navbar.html")))
-		tmpl.Execute(w, nil)
+		tmpl.Execute(w, blogPostData)
 
 		// Copied post section
 		w.WriteString("\n\n<!-- Copied body -->\n")
@@ -359,7 +359,7 @@ func generateBlogIndexPage(posts []Post) {
 	// Nav-bar section
 	w.WriteString("\n\n<!-- Auto-generated navbar -->\n")
 	tmpl = template.Must(template.ParseFiles(filepath.Join(ComponentPath, "navbar.html")))
-	tmpl.Execute(w, nil)
+	tmpl.Execute(w, blogIndexData)
 
 	// Copied index section
 	w.WriteString("\n\n<!-- Copied body -->\n")

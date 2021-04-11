@@ -17,7 +17,7 @@
                 {{range .Posts}}
                 <li class='entry {{.Tags}}'>
                     <div class='title-div'>
-                        <a href={{.Path}}>{{.Title}}</a>
+                        <a href=./{{.FileName}}>{{.Title}}</a>
                         <p class='post-date'>{{.Date}}</p>
                     </div>
                     <p class='post-overview'>{{.Overview}}</p>
