@@ -237,7 +237,11 @@ func generateBlogPages() []Post {
 			log.Fatalf("Date not found")
 		} else {
 			date = string(matched[1])
-			date = date[:strings.LastIndex(date, ",")]
+			if idx := strings.LastIndex(date, ","); idx == -1 {
+				log.Fatalf("Date ill-formatted")
+			} else {
+				date = date[:strings.LastIndex(date, ",")]
+			}
 		}
 		headers := strings.Split(string(content)[:strings.Index(string(content), "<div id='content-wrapper'>")], "\n")
 		if len(headers) < 1 || !overviewTagExp.MatchString(headers[0]) {
